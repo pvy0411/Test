@@ -1,6 +1,4 @@
-﻿CREATE DATABASE QuanLyPhongMachTu;
-USE QuanLyPhongMachTu;
-
+﻿-- CREATE TABLE
 CREATE TABLE CHUCVU
 (
 	MaCV int IDENTITY(1,1) primary key, 
@@ -57,7 +55,7 @@ CREATE TABLE PHIEUKHAM
 	MaPK INT IDENTITY(1,1) PRIMARY KEY,
 	MaNV INT,
 	MaBN INT,
-	NgayKham DATE NOT NULL,
+	NgayKham DATE NOT NULL DEFAULT GETDATE(),
 	SoThuTu INT NOT NULL DEFAULT 1,
 	CONSTRAINT fk_pk_nv FOREIGN KEY (MaNV) REFERENCES NHANVIEN(MaNV),
 	CONSTRAINT fk_pk_bn FOREIGN KEY (MaBN) REFERENCES BENHNHAN(MaBN)
@@ -78,9 +76,9 @@ CREATE TABLE CACHDUNG
 CREATE TABLE THUOC
 (
 	MaThuoc INT IDENTITY(1,1) PRIMARY KEY,
-	TenThuoc NVARCHAR(255) NOT NULL,
+	TenThuoc NVARCHAR(255) UNIQUE,
 	DonGiaBan DECIMAL(18,2) NOT NULL,
-	SoLuongTon  INT DEFAULT 0,
+	SoLuongTon INT DEFAULT 0,
 	MaCachDung INT,
 	MaDVT INT,
 	CONSTRAINT fk_t_cd FOREIGN KEY (MaCachDung) REFERENCES CACHDUNG(MaCachDung),
@@ -139,7 +137,7 @@ CREATE TABLE HOADON
 (
 	MaHD INT IDENTITY(1,1) PRIMARY KEY,
 	MaPK INT,
-	NgayLap DATETIME,
+	NgayLap DATETIME DEFAULT GETDATE(),
 	TongTienThuoc DECIMAL(18,2) NOT NULL,
 	TienKham DECIMAL(18,2) NOT NULL,
 	TongTien DECIMAL(18,2) DEFAULT 0,
@@ -185,140 +183,287 @@ CREATE TABLE THAMSO
 	GiaTri DECIMAL(18,2) NOT NULL
 );
 
---1. CHUCVU
-INSERT INTO CHUCVU (TenCV) VALUES
-(N'Bác sĩ'),
-(N'Lễ tân'),
-(N'Admin');
+---------------------------------------------------------------
+-- TRIGGER
+---------------------------------------------------------------
+-- trigger: soluongton >=0
+ALTER TABLE THUOC
+ADD CONSTRAINT chk_thuoc_soluongton_khongam
+CHECK (SoLuongTon >= 0);
 
---2. CHUYENKHOA
-INSERT INTO CHUYENKHOA (TenCK) VALUES
-(N'Nội tổng quát'),
-(N'Tim mạch'),
-(N'Y học cổ truyền'),
-(N'Tai mũi họng'),
-(N'Nhi khoa');
+-- check số lượng thuốc >= 0
+ALTER TABLE CT_PHIEUKHAM
+ADD CONSTRAINT CK_SoLuongThuoc_Positive
+CHECK (SoLuongThuoc >= 0);
+
+-- giá thuốc >= 0
+ALTER TABLE THUOC
+ADD CONSTRAINT CK_GiaThuoc
+CHECK (DonGiaBan >= 0);
+-- check số lượng nhâp
+ALTER TABLE CT_PHIEUNHAPTHUOC
+ADD CONSTRAINT CK_SoLuongNhap_Positive
+CHECK (SoLuong >= 0);
+-- giá nhập
+ALTER TABLE CT_PHIEUNHAPTHUOC
+ADD CONSTRAINT CK_DonGiaNhap_Positive
+CHECK (DonGiaNhap >= 0);
+
+-- trigger: ko xóa thuốc khi có bệnh nhân đnag dùng 
+CREATE TRIGGER trg_KiemTraXoaThuoc
+ON THUOC
+INSTEAD OF DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Kiểm tra xem thuốc bị xóa có tồn tại trong CT_PHIEUKHAM không
+    IF EXISTS (
+        SELECT 1
+        FROM deleted d
+        INNER JOIN CT_PHIEUKHAM ct ON d.MaThuoc = ct.MaThuoc
+    )
+    BEGIN
+        RAISERROR(
+            N'Không thể xóa thuốc vì thuốc này đã được kê trong phiếu khám của bệnh nhân.',
+            16, 1
+        );
+        RETURN; -- Hủy lệnh xóa, không làm gì thêm
+    END
+
+    -- Nếu không có ràng buộc kê đơn nào thì cho phép xóa
+    DELETE FROM THUOC
+    WHERE MaThuoc IN (SELECT MaThuoc FROM deleted);
+END;
+
+-- TRIGGER: Khi kê đơn thuốc, SoLuongThuoc phải <= SoLuongTon
+CREATE TRIGGER trg_KiemTraSoLuongKeDon
+ON CT_PHIEUKHAM
+INSTEAD OF INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Kiểm tra tồn kho hợp lệ
+    IF EXISTS (
+        SELECT 1
+        FROM inserted i JOIN THUOC t ON i.MaThuoc = t.MaThuoc
+        LEFT JOIN deleted d ON i.MaPK = d.MaPK AND i.MaThuoc = d.MaThuoc
+        WHERE i.SoLuongThuoc > (t.SoLuongTon + ISNULL(d.SoLuongThuoc,0))
+    )
+    BEGIN
+        RAISERROR(N'Số lượng thuốc vượt quá tồn kho.',16,1);
+        RETURN;
+    END
+
+    -- UPDATE
+    IF EXISTS (SELECT * FROM deleted)
+    BEGIN
+        UPDATE ct
+        SET
+            SoLuongThuoc = i.SoLuongThuoc,
+            DonGiaBan = i.DonGiaBan,
+            ThanhTien = i.SoLuongThuoc * i.DonGiaBan
+        FROM CT_PHIEUKHAM ct JOIN inserted i ON ct.MaPK = i.MaPK AND ct.MaThuoc = i.MaThuoc;
+
+        -- cập nhật kho
+        UPDATE t
+        SET t.SoLuongTon = t.SoLuongTon + d.SoLuongThuoc - i.SoLuongThuoc
+        FROM THUOC t JOIN inserted i ON t.MaThuoc = i.MaThuoc
+        JOIN deleted d ON i.MaPK = d.MaPK AND i.MaThuoc = d.MaThuoc;
+    END
+    ELSE
+    BEGIN
+        -- INSERT
+        INSERT INTO CT_PHIEUKHAM
+        (
+            MaPK,
+            MaThuoc,
+            SoLuongThuoc,
+            DonGiaBan,
+            ThanhTien
+        )
+        SELECT
+            MaPK,
+            MaThuoc,
+            SoLuongThuoc,
+            DonGiaBan,
+            SoLuongThuoc * DonGiaBan
+        FROM inserted;
+
+        -- trừ kho
+        UPDATE t
+        SET t.SoLuongTon = t.SoLuongTon - i.SoLuongThuoc
+        FROM THUOC t JOIN inserted i ON t.MaThuoc = i.MaThuoc;
+    END
+END;
 
 
---3. NHANVIEN
-INSERT INTO NHANVIEN (TenNV, CCCD, GioiTinh, NgaySinh, NgayBatDauLamViec, BangCapChungChi, DiaChi, SDT, Email, MaCV, MaCK) VALUES
-(N'Trần Minh Phúc', '123456789001', 'Nam', '1988-06-25', '2012-03-01', N'Tiến Sĩ Y Học', N'456 Đường Lê Lợi, TP.HCM', '0912345678', 'tran.minh.phuc@clinic.com', 1, 1),
-(N'Nguyễn Vũ Thùy Trâm', '123456789002', 'Nữ', '1995-07-18', '2018-05-12', N'Thạc Sĩ Y Khoa', N'Thủ Đức', '0901234562', 'tram@clinic.com', 1, 2),
-(N'Dương Thanh Hiếu', '123456789003', 'Nam', '1992-09-12', '2017-08-01', N'Bác Sĩ Chuyên Khoa I', N'Quận 3', '0901234563', 'hieu@clinic.com', 1, 5),
-(N'Nguyễn Trần Phương Vy', '123456789004', 'Nữ', '1996-02-20', '2019-11-15', N'Bác Sĩ Đa Khoa', N'Gò Vấp', '0901234565', 'vy@clinic.com', 1, 4),
-(N'Trần Triệu Dân', '123456789005', 'Nam', '1994-11-08', '2016-06-20', N'Bác Sĩ Chuyên Khoa II', N'Bình Thạnh', '0901234561', 'dan@clinic.com', 1, 3),
-(N'Nguyễn Văn Quản', '987654321098', 'Nam', '1980-01-01', '2010-01-01', NULL, N'456 Đường Lê Lợi, TP.HCM', '0912345678', 'admin@clinic.com', 3, NULL),
-(N'Nguyễn Nhâm', '123456789012', 'Nữ', '1995-05-15', '2022-03-01', NULL, N'123 Đường Trần Hưng Đạo, TP.HCM', '0901234567', 'le.thi.thu@clinic.com', 2, NULL);
-
-
---4. TAIKHOAN
-INSERT INTO TAIKHOAN (TenDangNhap, MatKhau, MaNV) VALUES
-('admin', '123', 6),
-('bacsi1', '123', 1),
-('bacsi2', '123', 2),
-('letan1', '123', 7);
-
---5. BENHNHAN
-INSERT INTO BENHNHAN (TenBN, CCCD, GioiTinh, NgaySinh, DiaChi, SDT, Email) VALUES
-(N'Nguyễn Thị Mai', '001234567890', 'Nữ', '2000-05-12', N'Thủ Đức', '0911111111', 'mai@gmail.com'),
-(N'Trần Văn Nam', '001234567891', 'Nam', '1998-03-15', N'Quận 9', '0911111112', 'nam@gmail.com'),
-(N'Lê Thị Hoa', '001234567892', 'Nữ', '2001-09-20', N'Dĩ An', '0911111113', 'hoa@gmail.com'),
-(N'Phạm Văn Long', '001234567893', 'Nam', '1995-12-01', N'Bình Thạnh', '0911111114', 'long@gmail.com'),
-(N'Đỗ Minh Anh', '001234567894', 'Nữ', '2002-07-25', N'Thủ Đức', '0911111115', 'anh@gmail.com');
-
-
---6. LOAIBENH (loại bệnh)
-INSERT INTO LOAIBENH (TenLoaiBenh) VALUES
-(N'Cảm cúm'),
-(N'Sốt'),
-(N'Đau dạ dày'),
-(N'Dị ứng'),
-(N'Viêm họng'); 
-
---7. CACHDUNG
-INSERT INTO CACHDUNG (MoTaCachDung) VALUES
-(N'Uống sau ăn'),
-(N'Uống trước ăn'),
-(N'Ngày 2 lần'),
-(N'Ngày 3 lần'),
-(N'Khi cần');
-
---8. DONVITINH
-INSERT INTO DONVITINH (TenDVT) VALUES
-(N'Viên'),
-(N'Chai'),
-(N'Gói'),
-(N'Ống'),
-(N'Tuýp');
-
-
---9. THUOC
-INSERT INTO THUOC (TenThuoc, DonGiaBan, SoLuongTon, MaCachDung, MaDVT) VALUES
-(N'Paracetamol', 5000, 100, 1, 1),
-(N'Amoxicillin', 10000, 80, 3, 1),
-(N'Vitamin C', 3000, 200, 5, 1),
-(N'Efferalgan', 7000, 120, 2, 1),
-(N'Sirô ho', 25000, 50, 4, 2);
-
-
---10.PHIEUKHAM
-INSERT INTO PHIEUKHAM(MaNV, MaBN, NgayKham) VALUES
-(1, 1, '2026-03-10'),
-(2, 2, '2026-04-10'),
-(3, 3, '2026-05-11'),
-(1, 4, '2026-05-11'),
-(2, 5, '2026-10-12');
-
-
---11. CT_PHIEUKHAM
-INSERT INTO CT_PHIEUKHAM (MaPK, MaThuoc, SoLuongThuoc, DonGiaBan, ThanhTien) VALUES
-(1, 1, 2, 5000, 10000),
-(1, 3, 1, 3000, 3000),
-(2, 2, 1, 10000, 10000),
-(3, 5, 1, 25000, 25000),
-(4, 4, 2, 7000, 14000),
-(5, 1, 1, 5000, 5000);
-
--- Additional sample prescriptions for testing
-INSERT INTO CT_PHIEUKHAM (MaPK, MaThuoc, SoLuongThuoc, DonGiaBan, ThanhTien) VALUES
-(1, 2, 1, 10000, 10000),
-(2, 1, 3, 5000, 15000),
-(2, 4, 1, 7000, 7000),
-(3, 3, 2, 3000, 6000),
-(3, 1, 1, 5000, 5000),
-(4, 5, 2, 25000, 50000),
-(4, 2, 1, 10000, 10000),
-(5, 3, 5, 3000, 15000),
-(5, 4, 1, 7000, 7000);
-
-
---12. HOADON
-INSERT INTO HOADON (MaPK, NgayLap, TongTienThuoc, TienKham, TongTien) VALUES
-(1, '2026-03-10', 13000, 30000, 43000),
-(2, '2026-04-10', 10000, 30000, 40000),
-(3, '2026-05-11', 15000, 30000, 45000),
-(4, '2026-05-11', 14000, 30000, 44000),
-(5, '2026-10-12', 25000, 30000, 55000);
-
-INSERT INTO THAMSO (TenThamSo, GiaTri) VALUES
-('SoBenhNhanToiDa',   40),
-('TienKham',          30000),
-('TyLeTinhDonGiaBan', 1.5);
-
-INSERT INTO THAMSO (TenThamSo, GiaTri) VALUES
-('ThoiGianLuuLichSuKham', 5);
-
---13. CT_LOAIBENH
-INSERT INTO CT_LOAIBENH (MaPK, MaLoaiBenh, TrieuChung, GhiChu) VALUES
-(1, 1, N'Sốt cao, đau đầu, mệt mỏi', N'Bệnh thường gặp vào mùa đông'),
-(2, 2, N'Sốt nhẹ, đau họng', N'Bệnh thường gặp vào mùa hè'),
-(3, 3, N'Đau vùng thượng vị, buồn nôn', N'Bệnh thường gặp khi ăn uống không hợp vệ sinh'),
-(4, 4, N'Ngứa da, nổi mề đay', N'Bệnh thường gặp khi tiếp xúc với dị nguyên'),
-(5, 5, N'Đau họng, khó nuốt', N'Bệnh thường gặp vào mùa lạnh');	
-
---14. CT_PIEUKHAM
-
+-- trigger hoàn kho khi xóa phiếu khám (xóa kê thuốc)
+CREATE TRIGGER trg_HoanKhoKhiXoaDon
+ON CT_PHIEUKHAM
+AFTER DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE T
+    SET T.SoLuongTon = T.SoLuongTon + D.SoLuongThuoc
+    FROM THUOC T INNER JOIN deleted D ON T.MaThuoc = D.MaThuoc;
+END;
 GO
+
+-- trigger xóa phiếu khám thì tự động hoàn kho
+CREATE TRIGGER trg_XoaPhieuKham
+ON PHIEUKHAM
+INSTEAD OF DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Không cho xóa nếu đã có hóa đơn
+    IF EXISTS (
+        SELECT 1
+        FROM deleted d JOIN HOADON h ON d.MaPK = h.MaPK
+    )
+    BEGIN
+        RAISERROR(N'Phiếu khám đã thanh toán, không thể xóa.',16,1);
+        RETURN;
+    END
+
+    -- Xóa loại bệnh
+    DELETE FROM CT_LOAIBENH
+    WHERE MaPK IN (SELECT MaPK FROM deleted);
+
+    -- Xóa thuốc kê đơn
+    DELETE FROM CT_PHIEUKHAM
+    WHERE MaPK IN (SELECT MaPK FROM deleted);
+
+    -- Xóa phiếu khám
+    DELETE pk
+    FROM PHIEUKHAM pk JOIN deleted d ON pk.MaPK = d.MaPK;
+END;
+GO
+CREATE TRIGGER trg_CapNhatHoaDon
+ON CT_PHIEUKHAM
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE hd
+    SET
+        TongTienThuoc = ISNULL(x.TongTienThuoc,0),
+        TongTien = ISNULL(x.TongTienThuoc,0) + hd.TienKham
+    FROM HOADON hd
+    OUTER APPLY
+    (
+        SELECT SUM(ThanhTien) TongTienThuoc
+        FROM CT_PHIEUKHAM ct
+        WHERE ct.MaPK = hd.MaPK
+    ) x
+    WHERE hd.MaPK IN
+    (
+        SELECT MaPK FROM inserted
+        UNION
+        SELECT MaPK FROM deleted
+    );
+END;
+GO
+
+-- Trigger nhập thuốc
+CREATE TRIGGER trg_CongKhoKhiNhapThuoc
+ON CT_PHIEUNHAPTHUOC
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE T
+    SET T.SoLuongTon = T.SoLuongTon + I.SoLuong
+    FROM THUOC T JOIN inserted I ON T.MaThuoc = I.MaThuoc;
+END;
+
+-- trigger tự động tính tiền trong hóa đơn
+CREATE TRIGGER trg_TinhHoaDon
+ON HOADON
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @TienKham DECIMAL(18,2);
+
+    -- Lấy tiền khám từ bảng tham số
+    SELECT @TienKham = GiaTri
+    FROM THAMSO
+    WHERE TenThamSo = 'TienKham';
+
+    -- Cập nhật hóa đơn
+    UPDATE HD
+    SET
+        HD.TongTienThuoc = ISNULL(CT.TongTienThuoc, 0),
+        HD.TienKham = @TienKham,
+        HD.TongTien = ISNULL(CT.TongTienThuoc, 0) + @TienKham
+    FROM HOADON HD INNER JOIN inserted I ON HD.MaHD = I.MaHD
+    OUTER APPLY
+    (
+        SELECT SUM(ThanhTien) AS TongTienThuoc
+        FROM CT_PHIEUKHAM
+        WHERE MaPK = HD.MaPK
+    ) CT;
+END;
+GO
+
+-- trigger trừ kho khi xóa phiếu nhập 
+CREATE TRIGGER trg_TruKhoKhiXoaPhieuNhap
+ON CT_PHIEUNHAPTHUOC
+AFTER DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE T
+    SET T.SoLuongTon = T.SoLuongTon - D.SoLuong
+    FROM THUOC T INNER JOIN deleted D ON T.MaThuoc = D.MaThuoc;
+END;
+
+-- trigger cập nhật lại số lượng tồn khi sửa phiếu nhập
+CREATE TRIGGER trg_CapNhatKhoKhiSuaPhieuNhap
+ON CT_PHIEUNHAPTHUOC
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    UPDATE T
+    SET T.SoLuongTon = T.SoLuongTon - D.SoLuong + I.SoLuong
+    FROM THUOC T INNER JOIN inserted I ON T.MaThuoc = I.MaThuoc
+    INNER JOIN deleted D ON I.MaPN = D.MaPN AND I.MaThuoc = D.MaThuoc;
+END;
+
+-- tư đông tính thành tiền
+CREATE TRIGGER trg_TinhThanhTienNhap
+ON CT_PHIEUNHAPTHUOC
+INSTEAD OF INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO CT_PHIEUNHAPTHUOC
+    (
+        MaPN,
+        MaThuoc,
+        DonGiaNhap,
+        SoLuong,
+        ThanhTien
+    )
+    SELECT
+        MaPN,
+        MaThuoc,
+        DonGiaNhap,
+        SoLuong,
+        DonGiaNhap * SoLuong
+    FROM inserted;
+END;
+GO
+
+-- 2. Tạo Procedure doanh thu bản vá lỗi NULL tuyệt đối
 CREATE PROCEDURE sp_LapBaoCaoDoanhThu
     @Thang INT,
     @Nam INT
@@ -326,47 +471,52 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- 1. Xóa dữ liệu cũ của tháng này (nếu đã lập trước đó rồi muốn lập lại)
+    -- BƯỚC 1: Dọn dẹp dữ liệu cũ của tháng/năm đang kết xuất
     DELETE FROM CT_BCDOANHTHU WHERE Thang = @Thang AND Nam = @Nam;
     DELETE FROM BCDOANHTHU WHERE Thang = @Thang AND Nam = @Nam;
 
-    -- 2. Tính Tổng doanh thu và Tổng số bệnh nhân của cả tháng
+    -- BƯỚC 2: Tính toán Tổng doanh thu và Tổng số bệnh nhân của cả tháng đó
     DECLARE @TongDoanhThuThang DECIMAL(18,2) = 0;
     DECLARE @TongBenhNhanThang INT = 0;
 
     SELECT 
-        @TongDoanhThuThang = ISNULL(SUM(hd.TongTien), 0),
+        -- Sử dụng ISNULL để ép kết quả SUM luôn ra số nếu tất cả hóa đơn bị trống hoặc NULL
+        @TongDoanhThuThang = ISNULL(SUM(ISNULL(hd.TongTien, 0)), 0),
         @TongBenhNhanThang = COUNT(DISTINCT pk.MaPK)
     FROM PHIEUKHAM pk
     LEFT JOIN HOADON hd ON pk.MaPK = hd.MaPK
     WHERE MONTH(pk.NgayKham) = @Thang AND YEAR(pk.NgayKham) = @Nam;
 
-    -- Nếu tháng đó không có ai khám thì thoát luôn
+    -- Nếu tháng này hoàn toàn không có một bệnh nhân nào đăng ký khám, thoát ngay
     IF @TongBenhNhanThang = 0 RETURN;
 
-    -- 3. Lưu dữ liệu tổng quát vào bảng BCDOANHTHU
+    -- BƯỚC 3: Lưu trữ dữ liệu tổng quan vào bảng BCDOANHTHU
     INSERT INTO BCDOANHTHU (Thang, Nam, TongDoanhThu, TongSoBenhNhan)
     VALUES (@Thang, @Nam, @TongDoanhThuThang, @TongBenhNhanThang);
 
-    -- 4. Tính toán và lưu dữ liệu chi tiết từng ngày vào bảng CT_BCDOANHTHU
+    -- BƯỚC 4: Tính toán chi tiết từng ngày và đổ vào bảng CT_BCDOANHTHU (Xử lý an toàn TyLe)
     INSERT INTO CT_BCDOANHTHU (Ngay, Thang, Nam, SoBenhNhan, DoanhThu, TyLe)
     SELECT 
         DAY(pk.NgayKham) AS Ngay,
         @Thang AS Thang,
         @Nam AS Nam,
         COUNT(DISTINCT pk.MaPK) AS SoBenhNhan,
-        ISNULL(SUM(hd.TongTien), 0) AS DoanhThu,
-        -- Tính tỷ lệ: (Doanh thu ngày / Doanh thu tháng) * 100
-        CAST((ISNULL(SUM(hd.TongTien), 0) / NULLIF(@TongDoanhThuThang, 0)) AS DECIMAL(3,2)) AS TyLe
+        ISNULL(SUM(ISNULL(hd.TongTien, 0)), 0) AS DoanhThu,
+        
+        -- VÁ LỖI TẠI ĐÂY: Nếu mẫu số bằng 0 hoặc phép tính ra NULL, hàm ISNULL ngoài cùng sẽ ép về 0.00
+        ISNULL(
+            CAST((ISNULL(SUM(ISNULL(hd.TongTien, 0)), 0) / NULLIF(@TongDoanhThuThang, 0)) AS DECIMAL(3,2)), 
+            0.00
+        ) AS TyLe
+
     FROM PHIEUKHAM pk
     LEFT JOIN HOADON hd ON pk.MaPK = hd.MaPK
     WHERE MONTH(pk.NgayKham) = @Thang AND YEAR(pk.NgayKham) = @Nam
     GROUP BY DAY(pk.NgayKham);
 
-    PRINT N'Đã lập xong Báo cáo Doanh thu tháng ' + CAST(@Thang AS VARCHAR) + '/' + CAST(@Nam AS VARCHAR);
+    PRINT N'Đã vá lỗi và lập xong Báo cáo Doanh thu tháng ' + CAST(@Thang AS VARCHAR) + '/' + CAST(@Nam AS VARCHAR);
 END;
 GO
-
 
 -- 2. Tạo Trigger tối ưu: Tự động tăng số thứ tự theo ngày + Chặn quá tải
 CREATE TRIGGER trg_TuDongTangVaKiemTraSoThuTu_PhieuKham
@@ -420,40 +570,6 @@ BEGIN
 END;
 GO
 
-
-INSERT INTO BENHNHAN (TenBN, CCCD, GioiTinh, NgaySinh, DiaChi, SDT, Email) VALUES
-(N'Nguyễn Hoàng Bách', '001234567895', 'Nam', '1993-11-22', N'Bình Thạnh, TP.HCM', '0922222221', 'bach.nguyen@gmail.com'), -- MaBN: 6
-(N'Vũ Hoàng Diệp',    '001234567896', 'Nữ',   '2004-02-05', N'Phú Nhuận, TP.HCM',  '0922222222', 'diep.vu@gmail.com'),   -- MaBN: 7
-(N'Phan Đình Tùng',   '001234567897', 'Nam', '1985-08-14', N'Tân Bình, TP.HCM',   '0922222223', 'tung.phan@gmail.com'); -- MaBN: 8
-
-
-INSERT INTO PHIEUKHAM(MaNV, MaBN, NgayKham) VALUES
-(1, 6, '2026-05-15'),
-(2, 7, '2026-05-28'),
-(4, 8, '2026-05-20');
-
-
-
-INSERT INTO CT_LOAIBENH (MaPK, MaLoaiBenh, TrieuChung, GhiChu) VALUES
-(6, 3, N'Đau âm ỉ vùng thượng vị, ợ chua', N'Tránh ăn đồ cay nóng'),
-(7, 1, N'Hắt hơi liên tục, chảy nước mũi', N'Nghỉ ngơi, uống nhiều nước ấm'),
-(8, 5, N'Đau rát họng, nuốt vướng, sốt nhẹ', N'Súc miệng nước muối sinh lý');
-
-INSERT INTO CT_PHIEUKHAM (MaPK, MaThuoc, SoLuongThuoc, DonGiaBan, ThanhTien) VALUES
-(6, 2, 2, 10000, 20000), 
-(6, 3, 3, 3000,  9000),  
-(7, 1, 4, 5000,  20000), 
-(7, 4, 2, 7000,  14000), 
-(8, 1, 2, 5000,  10000), 
-(8, 2, 2, 10000, 20000);
-
-
-INSERT INTO HOADON (MaPK, NgayLap, TongTienThuoc, TienKham, TongTien) VALUES
-(6, '2026-05-11 10:30:00', 29000, 30000, 59000),
-(7, '2026-05-11 11:15:00', 34000, 30000, 64000),
-(8, '2026-05-20 09:45:00', 30000, 30000, 60000);
-
-GO
 CREATE TRIGGER trg_TuDongCapNhatBaoCaoDoanhThu
 ON HOADON
 AFTER INSERT, UPDATE, DELETE
@@ -498,10 +614,6 @@ BEGIN
 END;
 GO
 
-UPDATE HOADON 
-SET NgayLap = NgayLap;
-
-GO
 CREATE PROCEDURE sp_LapBaoCaoSuDungThuoc
     @Thang INT,
     @Nam INT
@@ -607,10 +719,6 @@ BEGIN
 END;
 GO
 
-UPDATE CT_PHIEUKHAM
-SET SoLuongThuoc = SoLuongThuoc;
-GO
-
 CREATE TRIGGER trg_TuDongCapNhatBaoCaoThuocKhiNhapKho
 ON CT_PHIEUNHAPTHUOC
 AFTER INSERT, UPDATE, DELETE
@@ -655,6 +763,245 @@ BEGIN
 END;
 GO
 
+
+-----------------------------------------------------------
+-- INSERT DATA
+-----------------------------------------------------------
+
+
+--1. CHUCVU
+INSERT INTO CHUCVU (TenCV) VALUES
+(N'Bác sĩ'),
+(N'Lễ tân'),
+(N'Admin');
+
+--2. CHUYENKHOA
+INSERT INTO CHUYENKHOA (TenCK) VALUES
+(N'Nội tổng quát'),
+(N'Tim mạch'),
+(N'Y học cổ truyền'),
+(N'Tai mũi họng'),
+(N'Nhi khoa');
+
+
+--3. NHANVIEN
+INSERT INTO NHANVIEN (TenNV, CCCD, GioiTinh, NgaySinh, NgayBatDauLamViec, BangCapChungChi, DiaChi, SDT, Email, MaCV, MaCK) VALUES
+(N'Trần Minh Phúc', '123456789001', 'Nam', '1988-06-25', '2012-03-01', N'Tiến Sĩ Y Học', N'456 Đường Lê Lợi, TP.HCM', '0912345678', 'tran.minh.phuc@clinic.com', 1, 1),
+(N'Nguyễn Vũ Thùy Trâm', '123456789002', 'Nữ', '1995-07-18', '2018-05-12', N'Thạc Sĩ Y Khoa', N'Thủ Đức', '0901234562', 'tram@clinic.com', 1, 2),
+(N'Dương Thanh Hiếu', '123456789003', 'Nam', '1992-09-12', '2017-08-01', N'Bác Sĩ Chuyên Khoa I', N'Quận 3', '0901234563', 'hieu@clinic.com', 1, 5),
+(N'Nguyễn Trần Phương Vy', '123456789004', 'Nữ', '1996-02-20', '2019-11-15', N'Bác Sĩ Đa Khoa', N'Gò Vấp', '0901234565', 'vy@clinic.com', 1, 4),
+(N'Trần Triệu Dân', '123456789005', 'Nam', '1994-11-08', '2016-06-20', N'Bác Sĩ Chuyên Khoa II', N'Bình Thạnh', '0901234561', 'dan@clinic.com', 1, 3),
+(N'Nguyễn Văn Quản', '987654321098', 'Nam', '1980-01-01', '2010-01-01', NULL, N'456 Đường Lê Lợi, TP.HCM', '0912345678', 'admin@clinic.com', 3, NULL),
+(N'Nguyễn Nhâm', '123456789012', 'Nữ', '1995-05-15', '2022-03-01', NULL, N'123 Đường Trần Hưng Đạo, TP.HCM', '0901234567', 'le.thi.thu@clinic.com', 2, NULL);
+
+
+--4. TAIKHOAN
+INSERT INTO TAIKHOAN (TenDangNhap, MatKhau, MaNV) VALUES
+('admin', '123', 6),
+('bacsi1', '123', 1),
+('bacsi2', '123', 2),
+('letan1', '123', 7);
+
+--5. BENHNHAN
+INSERT INTO BENHNHAN (TenBN, CCCD, GioiTinh, NgaySinh, DiaChi, SDT, Email) VALUES
+(N'Nguyễn Thị Mai', '001234567890', N'Nữ', '2000-05-12', N'Thủ Đức', '0911111111', 'mai@gmail.com'),
+(N'Trần Văn Nam', '001234567891', 'Nam', '1998-03-15', N'Quận 9', '0911111112', 'nam@gmail.com'),
+(N'Lê Thị Hoa', '001234567892', N'Nữ', '2001-09-20', N'Dĩ An', '0911111113', 'hoa@gmail.com'),
+(N'Phạm Văn Long', '001234567893', 'Nam', '1995-12-01', N'Bình Thạnh', '0911111114', 'long@gmail.com'),
+(N'Đỗ Minh Anh', '001234567894', N'Nữ', '2002-07-25', N'Thủ Đức', '0911111115', 'anh@gmail.com'),
+(N'Nguyễn Hoàng Bách', '001234567895', 'Nam', '1993-11-22', N'Bình Thạnh, TP.HCM', '0922222221', 'bach.nguyen@gmail.com'), 
+(N'Vũ Hoàng Diệp',    '001234567896', N'Nữ',   '2004-02-05', N'Phú Nhuận, TP.HCM',  '0922222222', 'diep.vu@gmail.com'),   
+(N'Phan Đình Tùng',   '001234567897', 'Nam', '1985-08-14', N'Tân Bình, TP.HCM',   '0922222223', 'tung.phan@gmail.com'); 
+
+
+--6. LOAIBENH (loại bệnh)
+INSERT INTO LOAIBENH (TenLoaiBenh) VALUES
+-- Nội tổng quát (1-5 cũ + mở rộng)
+(N'Cảm cúm'),                       -- 1
+(N'Sốt'),                            -- 2
+(N'Đau dạ dày'),                     -- 3
+(N'Dị ứng'),                         -- 4
+(N'Viêm họng'),                      -- 5
+(N'Đau đầu'),                        -- 6
+(N'Mất ngủ'),                        -- 7
+(N'Táo bón'),                        -- 8
+(N'Tiêu chảy'),                      -- 9
+(N'Viêm loét dạ dày'),               -- 10
+(N'Trào ngược dạ dày'),              -- 11
+(N'Đái tháo đường'),                 -- 12
+(N'Béo phì'),                        -- 13
+(N'Thiếu máu'),                      -- 14
+(N'Suy nhược cơ thể'),               -- 15
+-- Tim Mạch
+(N'Tăng huyết áp'),                  -- 16
+(N'Hạ huyết áp'),                    -- 17
+(N'Rối loạn nhịp tim'),              -- 18
+(N'Suy tim'),                        -- 19
+(N'Xơ vữa động mạch'),               -- 20
+-- Hô Hấp
+(N'Hen suyễn'),                      -- 21
+(N'Viêm phế quản'),                  -- 22
+(N'Viêm phổi'),                      -- 23
+(N'COPD'),                           -- 24
+(N'Viêm xoang'),                     -- 25
+-- Tai Mũi Họng
+(N'Viêm tai giữa'),                  -- 26
+(N'Viêm amidan'),                    -- 27
+(N'Polyp mũi'),                      -- 28
+(N'Ù tai'),                          -- 29
+-- Nhi Khoa
+(N'Sốt xuất huyết'),                 -- 30
+(N'Tay chân miệng'),                 -- 31
+(N'Sởi'),                            -- 32
+(N'Thủy đậu'),                       -- 33
+(N'Rối loạn tiêu hóa trẻ em'),       -- 34
+-- Thần Kinh
+(N'Đau nửa đầu (Migraine)'),         -- 35
+(N'Chóng mặt'),                      -- 36
+(N'Động kinh'),                      -- 37
+(N'Tê liệt'),                        -- 38
+-- Y Học Cổ Truyền
+(N'Đau lưng'),                       -- 39
+(N'Đau cổ vai gáy'),                 -- 40
+(N'Đau khớp'),                       -- 41
+(N'Thoái hóa cột sống'),             -- 42
+-- Mắt
+(N'Viêm kết mạc'),                   -- 43
+(N'Khô mắt'),                        -- 44
+(N'Cận thị'),                        -- 45
+-- Nha Khoa
+(N'Sâu răng'),                       -- 46
+(N'Viêm nướu'),                      -- 47
+(N'Viêm nha chu'),                   -- 48
+-- Da liễu
+(N'Mề đay mãn tính'),                -- 49
+(N'Viêm da tiếp xúc'),               -- 50
+(N'Nấm da'),                         -- 51
+(N'Zona thần kinh'),                 -- 52
+-- Nhiễm trùng
+(N'Nhiễm khuẩn đường tiết niệu'),    -- 53
+(N'Nhiễm giun sán'),                 -- 54
+(N'Nhiễm trùng da'),                 -- 55
+(N'Viêm gan');                       -- 56
+
+--7. CACHDUNG
+INSERT INTO CACHDUNG (MoTaCachDung) VALUES
+(N'Uống sau ăn'),
+(N'Uống trước ăn'),
+(N'Ngày 2 lần'),
+(N'Ngày 3 lần'),
+(N'Khi cần');
+
+--8. DONVITINH
+INSERT INTO DONVITINH (TenDVT) VALUES
+(N'Viên'),
+(N'Chai'),
+(N'Gói'),
+(N'Ống'),
+(N'Tuýp');
+
+
+--9. THUOC
+INSERT INTO THUOC (TenThuoc, DonGiaBan, SoLuongTon, MaCachDung, MaDVT) VALUES
+(N'Paracetamol',       5000, 100, 1, 1),
+(N'Amoxicillin',      10000,  80, 3, 1),
+(N'Vitamin C',         3000, 200, 5, 1),
+(N'Efferalgan',        7000, 120, 2, 1),
+(N'Sirô ho',          25000,  50, 4, 2),
+(N'Ibuprofen',         2000,  50, 3, 1),
+(N'Aspirin',            800,  80, 1, 1),
+(N'Metformin',         1500, 120, 3, 1),
+(N'Lisinopril',        2500,  90, 1, 1),
+(N'Omeprazole',        2000,  75, 1, 1),
+(N'Cephalexin',        3500,  55, 5, 1),
+(N'Loratadine',        1200, 110, 1, 1),
+(N'Fluticasone',       5000,  30, 3, 2),
+(N'Salbutamol',        4500,  25, 4, 2),
+(N'Dexamethasone',     1800,  40, 3, 1),
+(N'Ciprofloxacin',     2200,  65, 3, 1),
+(N'Azithromycin',      3200,  50, 1, 1),
+(N'Ambroxol',           900, 150, 4, 1),
+(N'Guaifenesin',       4000,  35, 3, 2),
+(N'Hydrocodone',       4800,  30, 5, 1),
+(N'Diphenhydramine',   1100,  85, 1, 1),
+(N'Cetirizine',         950, 130, 1, 1),
+(N'Acyclovir',         3800,  45, 5, 1),
+(N'Nystatin',          5500,  20, 3, 2),
+(N'Albendazole',       2300,  55, 3, 1),
+(N'Mebendazole',       2100,  60, 4, 1),
+(N'Pyrantel Pamoate',  4200,  25, 1, 2),
+(N'Tetracycline',      1900,  70, 5, 1),
+(N'Doxycycline',       2400,  65, 3, 1),
+(N'Clarithromycin',    3100,  50, 3, 1),
+(N'Clindamycin',       2600,  55, 4, 1),
+(N'Metronidazole',     1400,  80, 4, 1);
+
+--10.PHIEUKHAM
+INSERT INTO PHIEUKHAM(MaNV, MaBN, NgayKham) VALUES
+(1, 1, '2026-03-10'),
+(2, 2, '2026-04-10'),
+(3, 3, '2026-05-11'),
+(1, 4, '2026-05-11'),
+(2, 5, '2026-10-12'),
+(1, 6, '2026-05-15'),
+(2, 7, '2026-05-28'),
+(4, 8, '2026-05-20');
+
+--11. CT_PHIEUKHAM
+INSERT INTO CT_PHIEUKHAM (MaPK, MaThuoc, SoLuongThuoc, DonGiaBan, ThanhTien) VALUES
+(1, 1, 2, 5000, 10000),
+(1, 3, 1, 3000, 3000),
+(2, 2, 1, 10000, 10000),
+(3, 5, 1, 25000, 25000),
+(4, 4, 2, 7000, 14000),
+(5, 1, 1, 5000, 5000);
+
+-- Additional sample prescriptions for testing
+INSERT INTO CT_PHIEUKHAM (MaPK, MaThuoc, SoLuongThuoc, DonGiaBan, ThanhTien) VALUES
+(1, 2, 1, 10000, 10000),
+(2, 1, 3, 5000, 15000),
+(2, 4, 1, 7000, 7000),
+(3, 3, 2, 3000, 6000),
+(3, 1, 1, 5000, 5000),
+(4, 5, 2, 25000, 50000),
+(4, 2, 1, 10000, 10000),
+(5, 3, 5, 3000, 15000),
+(5, 4, 1, 7000, 7000),
+(6, 2, 2, 10000, 20000), 
+(6, 3, 3, 3000,  9000),  
+(7, 1, 4, 5000,  20000), 
+(7, 4, 2, 7000,  14000), 
+(8, 1, 2, 5000,  10000), 
+(8, 2, 2, 10000, 20000);
+
+--12. HOADON
+INSERT INTO HOADON (MaPK, NgayLap, TongTienThuoc, TienKham, TongTien) VALUES
+(1, '2026-03-10', 13000, 30000, 43000),
+(2, '2026-04-10', 10000, 30000, 40000),
+(3, '2026-05-11', 15000, 30000, 45000),
+(4, '2026-05-11', 14000, 30000, 44000),
+(5, '2026-10-12', 25000, 30000, 55000),
+(6, '2026-05-11 10:30:00', 29000, 30000, 59000),
+(7, '2026-05-11 11:15:00', 34000, 30000, 64000),
+(8, '2026-05-20 09:45:00', 30000, 30000, 60000);
+
+INSERT INTO THAMSO (TenThamSo, GiaTri) VALUES
+('SoBenhNhanToiDa',   40),
+('TienKham',          30000),
+('TyLeTinhDonGiaBan', 1.5);
+
+--13. CT_LOAIBENH
+INSERT INTO CT_LOAIBENH (MaPK, MaLoaiBenh, TrieuChung, GhiChu) VALUES
+(1, 1, N'Sốt cao, đau đầu, mệt mỏi', N'Bệnh thường gặp vào mùa đông'),
+(2, 2, N'Sốt nhẹ, đau họng', N'Bệnh thường gặp vào mùa hè'),
+(3, 3, N'Đau vùng thượng vị, buồn nôn', N'Bệnh thường gặp khi ăn uống không hợp vệ sinh'),
+(4, 4, N'Ngứa da, nổi mề đay', N'Bệnh thường gặp khi tiếp xúc với dị nguyên'),
+(5, 5, N'Đau họng, khó nuốt', N'Bệnh thường gặp vào mùa lạnh'),
+(6, 3, N'Đau âm ỉ vùng thượng vị, ợ chua', N'Tránh ăn đồ cay nóng'),
+(7, 1, N'Hắt hơi liên tục, chảy nước mũi', N'Nghỉ ngơi, uống nhiều nước ấm'),
+(8, 5, N'Đau rát họng, nuốt vướng, sốt nhẹ', N'Súc miệng nước muối sinh lý');
+
+-- 14. PHIEUNHAp
 INSERT INTO PHIEUNHAPTHUOC (NgayNhap, TongTienNhap) VALUES 
 ('2026-05-02', 2900000.00), -- MaPN: 1
 ('2026-05-15', 1100000.00); -- MaPN: 2
@@ -671,9 +1018,6 @@ INSERT INTO CT_PHIEUNHAPTHUOC (MaPN, MaThuoc, DonGiaNhap, SoLuong, ThanhTien) VA
 (2, 3, 2000.00, 300, 600000.00),   -- Nhập 300 viên Vitamin C
 (2, 5, 25000.00, 20, 500000.00);   -- Nhập 20 chai Sirô ho
 GO
-
-
-
 -- Tạo thêm bệnh nhân mới để khám bệnh
 INSERT INTO BENHNHAN (TenBN, CCCD, GioiTinh, NgaySinh, DiaChi, SDT, Email) VALUES
 (N'Vũ Hoàng Long', '001234567899', 'Nam', '1990-04-12', N'Quận 1, TP.HCM', '0933333331', 'long.vu@gmail.com'); -- MaBN: 9
@@ -688,10 +1032,5 @@ GO
 INSERT INTO CT_PHIEUKHAM (MaPK, MaThuoc, SoLuongThuoc, DonGiaBan, ThanhTien) VALUES
 (9, 1, 10, 5000.00, 50000.00), -- Kê 10 viên Paracetamol
 (9, 5, 2, 25000.00, 50000.00);  -- Kê 2 chai Sirô ho
-GO
-
-
-UPDATE CT_PHIEUKHAM SET SoLuongThuoc = SoLuongThuoc;
-UPDATE CT_PHIEUNHAPTHUOC SET SoLuong = SoLuong;
 GO
 
