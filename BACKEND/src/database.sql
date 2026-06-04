@@ -791,24 +791,6 @@ BEGIN
 END;
 GO
 
-CREATE TRIGGER trg_ChuanHoaDuLieuBenhNhan
-ON BENHNHAN
-AFTER INSERT, UPDATE
-AS
-BEGIN
-    -- Ngăn chặn Trigger tự kích hoạt vòng lặp vô hạn
-    IF TRIGGER_NESTLEVEL() > 1 RETURN;
-
-    -- Tiến hành cập nhật lại dữ liệu vừa đưa vào
-    UPDATE b
-    SET 
-        -- 1. Tự động viết hoa chữ cái đầu của Tên bệnh nhân
-        b.TenBN = dbo.fn_ChuanHoaTen(i.TenBN)
-    FROM BENHNHAN b
-    JOIN inserted i ON b.MaBN = i.MaBN;
-END;
-GO
-
 
 
 -----------------------------------------------------------
