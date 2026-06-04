@@ -1671,7 +1671,7 @@ Ngày in: ${new Date().toLocaleDateString('vi-VN')}
             try {
                 const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
                 const resp = await fetch(`${API_BASE_URL}/thuoc`, {
-                    headers: { Authorization: token ? `Bearer ${token}` : '' }
+                    headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' }
                 });
                 if (!resp.ok) {
                     results.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Lỗi khi lấy dữ liệu</td></tr>';

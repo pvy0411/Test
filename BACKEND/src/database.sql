@@ -763,6 +763,53 @@ BEGIN
 END;
 GO
 
+CREATE FUNCTION dbo.fn_ChuanHoaTen (@InputString NVARCHAR(255))
+RETURNS NVARCHAR(255)
+AS
+BEGIN
+    DECLARE @Index INT = 1;
+    DECLARE @Char NCHAR(1);
+    DECLARE @OutputString NVARCHAR(255);
+
+    -- Ép toàn bộ chuỗi về chữ thường trước (vd: nGUyễn vĂN a -> nguyễn văn a)
+    SET @OutputString = LOWER(LTRIM(RTRIM(@InputString)));
+
+    -- Vòng lặp duyệt qua từng chữ cái để viết hoa chữ cái đầu tiên và chữ sau khoảng trắng
+    WHILE @Index <= LEN(@OutputString)
+    BEGIN
+        SET @Char = SUBSTRING(@OutputString, @Index, 1);
+        
+        IF @Index = 1 OR SUBSTRING(@OutputString, @Index - 1, 1) = ' '
+        BEGIN
+            SET @OutputString = STUFF(@OutputString, @Index, 1, UPPER(@Char));
+        END
+        
+        SET @Index = @Index + 1;
+    END
+
+    RETURN @OutputString;
+END;
+GO
+
+CREATE TRIGGER trg_ChuanHoaDuLieuBenhNhan
+ON BENHNHAN
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    -- Ngăn chặn Trigger tự kích hoạt vòng lặp vô hạn
+    IF TRIGGER_NESTLEVEL() > 1 RETURN;
+
+    -- Tiến hành cập nhật lại dữ liệu vừa đưa vào
+    UPDATE b
+    SET 
+        -- 1. Tự động viết hoa chữ cái đầu của Tên bệnh nhân
+        b.TenBN = dbo.fn_ChuanHoaTen(i.TenBN)
+    FROM BENHNHAN b
+    JOIN inserted i ON b.MaBN = i.MaBN;
+END;
+GO
+
+
 
 -----------------------------------------------------------
 -- INSERT DATA
@@ -937,15 +984,16 @@ INSERT INTO THUOC (TenThuoc, DonGiaBan, SoLuongTon, MaCachDung, MaDVT) VALUES
 (N'Metronidazole',     1400,  80, 4, 1);
 
 --10.PHIEUKHAM
-INSERT INTO PHIEUKHAM(MaNV, MaBN, NgayKham) VALUES
-(1, 1, '2026-03-10'),
-(2, 2, '2026-04-10'),
-(3, 3, '2026-05-11'),
-(1, 4, '2026-05-11'),
-(2, 5, '2026-10-12'),
-(1, 6, '2026-05-15'),
-(2, 7, '2026-05-28'),
-(4, 8, '2026-05-20');
+INSERT INTO PHIEUKHAM(MaNV, MaBN) VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(1, 4),
+(2, 5),
+(1, 6),
+(2, 7),
+(4, 8);
+
 
 --11. CT_PHIEUKHAM
 INSERT INTO CT_PHIEUKHAM (MaPK, MaThuoc, SoLuongThuoc, DonGiaBan, ThanhTien) VALUES
@@ -975,20 +1023,21 @@ INSERT INTO CT_PHIEUKHAM (MaPK, MaThuoc, SoLuongThuoc, DonGiaBan, ThanhTien) VAL
 (8, 2, 2, 10000, 20000);
 
 --12. HOADON
-INSERT INTO HOADON (MaPK, NgayLap, TongTienThuoc, TienKham, TongTien) VALUES
-(1, '2026-03-10', 13000, 30000, 43000),
-(2, '2026-04-10', 10000, 30000, 40000),
-(3, '2026-05-11', 15000, 30000, 45000),
-(4, '2026-05-11', 14000, 30000, 44000),
-(5, '2026-10-12', 25000, 30000, 55000),
-(6, '2026-05-11 10:30:00', 29000, 30000, 59000),
-(7, '2026-05-11 11:15:00', 34000, 30000, 64000),
-(8, '2026-05-20 09:45:00', 30000, 30000, 60000);
+INSERT INTO HOADON (MaPK, TongTienThuoc, TienKham, TongTien) VALUES
+(1, 13000, 30000, 43000),
+(2, 10000, 30000, 40000),
+(3, 15000, 30000, 45000),
+(4, 14000, 30000, 44000),
+(5, 25000, 30000, 55000),
+(6, 29000, 30000, 59000),
+(7, 34000, 30000, 64000),
+(8, 30000, 30000, 60000);
 
 INSERT INTO THAMSO (TenThamSo, GiaTri) VALUES
 ('SoBenhNhanToiDa',   40),
 ('TienKham',          30000),
-('TyLeTinhDonGiaBan', 1.5);
+('TyLeTinhDonGiaBan', 1.5),
+('ThoiGianLuuLichSuKham', 5);
 
 --13. CT_LOAIBENH
 INSERT INTO CT_LOAIBENH (MaPK, MaLoaiBenh, TrieuChung, GhiChu) VALUES
@@ -1001,7 +1050,7 @@ INSERT INTO CT_LOAIBENH (MaPK, MaLoaiBenh, TrieuChung, GhiChu) VALUES
 (7, 1, N'Hắt hơi liên tục, chảy nước mũi', N'Nghỉ ngơi, uống nhiều nước ấm'),
 (8, 5, N'Đau rát họng, nuốt vướng, sốt nhẹ', N'Súc miệng nước muối sinh lý');
 
--- 14. PHIEUNHAp
+-- 14. PHIEUNHAP
 INSERT INTO PHIEUNHAPTHUOC (NgayNhap, TongTienNhap) VALUES 
 ('2026-05-02', 2900000.00), -- MaPN: 1
 ('2026-05-15', 1100000.00); -- MaPN: 2

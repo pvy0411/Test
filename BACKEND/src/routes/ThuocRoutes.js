@@ -8,14 +8,14 @@ const { XacThuc, PhanQuyen } = require('../middlewares/AuthMiddleware');
 router.get(
     '/search',
     XacThuc,
-    PhanQuyen('BacSi', 'LeTan', 'Lễ tân'),
+    PhanQuyen('BacSi', 'Bacsi', 'bacsi', 'Bác sĩ', 'Bác Sĩ', 'LeTan', 'Lễ tân'),
     ThuocController.SearchThuoc
 );
 
 router.get(
     '/', 
     XacThuc, 
-    PhanQuyen('BacSi', 'LeTan', 'Lễ tân'), 
+    PhanQuyen('BacSi', 'Bacsi', 'bacsi', 'Bác sĩ', 'Bác Sĩ', 'LeTan', 'Lễ tân'), 
     ThuocController.GetAllThuoc
 );
 
