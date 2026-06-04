@@ -1,0 +1,2361 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Quản lý Phòng Khám - Quản Trị Viên</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, #1f3a93 0%, #2d5f8d 100%);
+            color: white;
+            overflow-y: auto;
+            padding-top: 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .sidebar-brand {
+            padding: 0 20px 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-brand h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-brand p {
+            font-size: 12px;
+            opacity: 0.8;
+            margin: 0;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin: 0;
+        }
+
+        .nav-menu a {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: #4db8ff;
+            padding-left: 25px;
+        }
+
+        .nav-menu a.no-icon {
+            padding-left: 48px;
+        }
+
+        .nav-menu a.no-icon:hover,
+        .nav-menu a.no-icon.active {
+            padding-left: 53px;
+        }
+
+        .nav-menu i {
+            margin-right: 12px;
+            font-size: 16px;
+        }
+
+        .main-container {
+            margin-left: 280px;
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f3a93;
+            margin: 0;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            text-align: right;
+        }
+
+        .user-info p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-logout:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: white;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 20px !important;
+            font-weight: 700;
+            border: none !important;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #1f3a93;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-label.required::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+        .form-control,
+        .form-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        table th {
+            font-weight: 700;
+            padding: 15px;
+            border: none;
+        }
+
+        table td {
+            padding: 12px 15px;
+            border-color: #e0e0e0;
+        }
+
+        table tbody tr:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 5px;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            border: none;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        #medical-record-search .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #medical-record-search .search-box input {
+            flex: 1;
+        }
+
+        #medical-record-search .btn {
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        #medical-record-search .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 700;
+            padding: 15px;
+        }
+
+        #medical-record-search .table tbody td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+
+        #medical-record-search .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        #patient-search .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #patient-search .search-box input {
+            flex: 1;
+        }
+
+        #patient-search .btn {
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        #patient-search .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 700;
+            padding: 15px;
+        }
+
+        #patient-search .table tbody td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+
+        #patient-search .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        #import-receipt-search .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #import-receipt-search .search-box input {
+            flex: 1;
+        }
+
+        #import-receipt-search .btn {
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        #import-receipt-search .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 700;
+            padding: 15px;
+        }
+
+        #import-receipt-search .table tbody td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+
+        #import-receipt-search .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        #disease-search .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #disease-search .search-box input {
+            flex: 1;
+        }
+
+        #disease-search .btn {
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        #disease-search .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 700;
+            padding: 15px;
+        }
+
+        #disease-search .table tbody td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+
+        #disease-search .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        #daily-exam .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #daily-exam .search-box input {
+            flex: 1;
+        }
+
+        #daily-exam .btn {
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        #daily-exam .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 700;
+            padding: 15px;
+        }
+
+        #daily-exam .table tbody td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+
+        #daily-exam .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        #revenue-report .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 700;
+            padding: 15px;
+        }
+
+        #revenue-report .table tbody td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+
+        #revenue-report .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        #medicine-stats .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 700;
+            padding: 15px;
+        }
+
+        #medicine-stats .table tbody td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+
+        #medicine-stats .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        #regulations .card-body {
+            background: #f7f8fb;
+            border-radius: 8px;
+        }
+
+        .regulations-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+        }
+
+        .regulations-table th,
+        .regulations-table td {
+            padding: 14px 16px;
+            border: 1px solid #e5e7ef;
+            vertical-align: middle;
+        }
+
+        .regulations-table thead th {
+            background: #eef1f7;
+            color: #1f3a93;
+            font-weight: 700;
+            text-align: left;
+        }
+
+        .regulations-table .label-cell {
+            width: 50%;
+            font-weight: 600;
+            color: #2f3a4f;
+            background: #fafbff;
+        }
+
+        .regulations-table input[type="number"] {
+            width: 100%;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .regulations-table input[type="number"]:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            outline: none;
+        }
+
+        .input-error {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.2) !important;
+        }
+
+        .regulations-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .alert-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 300px;
+            font-family: monospace;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            .main-container {
+                margin-left: 200px;
+                padding: 15px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h3><i class="bi bi-hospital"></i> Quản Lý Phòng Khám</h3>
+            <p>Hệ Thống Admin</p>
+        </div>
+        <ul class="nav-menu">
+            <li><a href="#" onclick="switchTab(event, 'profile')" class="active"><i class="bi bi-person-circle"></i> Hồ Sơ Cá Nhân</a></li>
+            <li><a href="#" onclick="switchTab(event, 'medical-record-search')"><i class="fas fa-clipboard-list"></i> Tra Cứu Phiếu Khám</a></li>
+            <li><a href="#" onclick="switchTab(event, 'patient-search')"><i class="fas fa-users"></i> Tra Cứu Bệnh Nhân</a></li>
+            <li><a href="#" onclick="switchTab(event, 'disease-search')"><i class="fas fa-virus-covid"></i> Tra Cứu Danh Sách Loại Bệnh</a></li>
+            <li><a href="#" onclick="switchTab(event, 'import-receipt-search')"><i class="no-icon"></i>Tra Cứu Phiếu Nhập Thuốc</a></li>
+            <li><a href="#" onclick="switchTab(event, 'daily-exam')"><i class="fas fa-calendar-check"></i> Tra Cứu Danh Sách Khám Bệnh Theo Ngày</a></li>
+            <li><a href="#" onclick="switchTab(event, 'medicine-input')"><i class="fas fa-pills"></i> Nhập Danh Sách Thuốc</a></li>
+            <li><a href="#" onclick="switchTab(event, 'disease-input')"><i class="fas fa-file-medical"></i> Nhập Danh Sách Loại Bệnh</a></li>
+            <li><a href="#" onclick="switchTab(event, 'revenue-report')"><i class="fas fa-chart-line"></i> Báo Cáo Doanh Thu Theo Tháng</a></li>
+            <li><a href="#" onclick="switchTab(event, 'medicine-stats')"><i class="fas fa-chart-bar"></i> Thống Kê Thuốc Theo Tháng </a></li>
+            <li><a href="#" onclick="switchTab(event, 'regulations')"><i class="fas fa-file-contract"></i> Quy Định</a></li>
+        </ul>
+    </div>
+
+    <div class="main-container">
+        <div class="header">
+            <h1 id="page-title">Hồ Sơ Cá Nhân</h1>
+            <div class="header-right">
+                <div class="user-info">
+                    <p>Chào, <strong id="current-user">Admin User</strong></p>
+                    <p id="header-role" style="font-size: 12px; color: #999;">Quản trị viên</p>
+                </div>
+                <button class="btn-logout" onclick="handleLogout()">Đăng Xuất</button>
+            </div>
+        </div>
+
+        <div id="alert-container"></div>
+
+        <!-- Medical Record Search -->
+        <div id="medical-record-search" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-search-heart"></i> Tra Cứu Phiếu Khám Bệnh
+                </div>
+                <div class="card-body">
+                    <div class="search-box">
+                        <input type="text" class="form-control" id="examSearchInput" placeholder="Tìm kiếm theo Mã Phiếu Khám hoặc Tên Bệnh Nhân..." onkeyup="searchExams()">
+                        <button class="btn btn-primary" onclick="searchExams()"><i class="bi bi-search"></i> Tìm Kiếm</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">STT</th>
+                                    <th>Mã Phiếu Khám</th>
+                                    <th>Họ Tên</th>
+                                    <th>Giới Tính</th>
+                                    <th>Năm Sinh</th>
+                                    <th>Ngày Khám</th>
+                                    <th style="width: 120px;">Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="examSearchResults">
+                                <tr>
+                                    <td colspan="7" class="no-results">Nhập thông tin tìm kiếm...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patient Search -->
+        <div id="patient-search" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-search"></i> Tra Cứu Bệnh Nhân
+                </div>
+                <div class="card-body">
+                    <div class="search-box">
+                        <input type="text" class="form-control" id="patientSearchInput" placeholder="Tìm kiếm theo Mã Bệnh Nhân hoặc Họ Tên..." onkeyup="searchPatients()">
+                        <button class="btn btn-primary" onclick="searchPatients()"><i class="bi bi-search"></i> Tìm Kiếm</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mã Bệnh Nhân</th>
+                                    <th>Họ và Tên</th>
+                                    <th>Năm Sinh</th>
+                                    <th>Giới Tính</th>
+                                    <th>Ngày Tiếp Nhận</th>
+                                    <th>Địa Chỉ / Ghi Chú</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patientSearchResults">
+                                <tr>
+                                    <td colspan="6" class="no-results">Nhập thông tin tìm kiếm...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Receipt Search -->
+        <div id="import-receipt-search" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    Tra Cứu Phiếu Nhập Thuốc
+                </div>
+                <div class="card-body">
+                    <div class="search-box">
+                        <input type="text" class="form-control" id="importReceiptSearchInput" placeholder="Tìm kiếm theo Mã Phiếu Nhập hoặc Ngày Nhập..." onkeyup="searchImportReceipts()">
+                        <button class="btn btn-primary" onclick="searchImportReceipts()"><i class="bi bi-search"></i> Tìm Kiếm</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mã Phiếu Nhập Thuốc</th>
+                                    <th>Ngày Nhập Thuốc</th>
+                                    <th>Tổng Tiền Nhập</th>
+                                    <th style="width: 180px;">Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="importReceiptSearchResults">
+                                <tr>
+                                    <td colspan="4" class="no-results">Đang tải dữ liệu phiếu nhập thuốc...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="importReceiptModalOverlay" onclick="closeImportReceiptDetail()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000;"></div>
+                    <div id="importReceiptDetailPanel" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:900px; max-width:94vw; max-height:88vh; overflow:auto; background:white; padding:24px; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,0.2); z-index:1001;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
+                            <div>
+                                <h5 style="color:#1f3a93; font-weight:700; margin:0;">Chi Tiết Phiếu Nhập Thuốc</h5>
+                                <div style="color:#666; margin-top:4px;">
+                                    <span>Mã phiếu: <strong id="importReceiptDetailCode"></strong></span>
+                                    <span style="margin-left:18px;">Ngày nhập: <strong id="importReceiptDetailDate"></strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Mã Thuốc</th>
+                                        <th>Tên Thuốc</th>
+                                        <th>Đơn Giá Nhập</th>
+                                        <th>Số Lượng</th>
+                                        <th>Thành Tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="importReceiptDetailResults">
+                                    <tr>
+                                        <td colspan="5" class="no-results">Chọn một phiếu nhập để xem chi tiết</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="text-align:right; color:#1f3a93; font-size:18px; font-weight:700; margin-top:12px;">
+                            Tổng tiền nhập: <span id="importReceiptDetailTotal">0 VND</span>
+                        </div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; margin-top:18px;">
+                            <button class="btn btn-secondary" onclick="closeImportReceiptDetail()">Đóng</button>
+                            <button class="btn btn-primary" onclick="printImportReceipt()"><i class="bi bi-printer"></i> In Phiếu Nhập Thuốc</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disease Search -->
+        <div id="disease-search" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-clipboard-pulse"></i> Tra Cứu Danh Sách Loại Bệnh
+                </div>
+                <div class="card-body">
+                    <div class="search-box">
+                        <input type="text" class="form-control" id="diseaseSearchInput" placeholder="Tìm kiếm theo Tên Loại Bệnh..." onkeyup="searchDiseases()">
+                        <button class="btn btn-primary" onclick="searchDiseases()"><i class="bi bi-search"></i> Tìm Kiếm</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mã Loại Bệnh</th>
+                                    <th>Tên Loại Bệnh</th>
+                                    <th>Mô Tả Chi Tiết Triệu Chứng / Đặc Điểm</th>
+                                </tr>
+                            </thead>
+                            <tbody id="diseaseSearchResults">
+                                <tr>
+                                    <td colspan="3" class="no-results">Nhập thông tin tìm kiếm...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Exam -->
+        <div id="daily-exam" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-calendar-check"></i> Tra Cứu Danh Sách Khám Bệnh Theo Ngày
+                </div>
+                <div class="card-body">
+                    <div class="search-box">
+                        <input type="date" id="examDate" class="form-control" onchange="filterExamByDate()">
+                        <button class="btn btn-primary" onclick="filterExamByDate()"><i class="bi bi-search"></i> Tìm Kiếm</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px;">STT</th>
+                                    <th>Mã Phiếu Khám</th>
+                                    <th>Họ Tên</th>
+                                    <th>Giới Tính</th>
+                                    <th>Năm Sinh</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dailyExamResults">
+                                <tr>
+                                    <td colspan="5" class="no-results">Nhập ngày khám...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="margin-top: 10px; font-weight: 600; color: #1f3a93;">
+                        QD2: Mỗi ngày chỉ khám tối đa 40 bệnh nhân.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medicine Input -->
+        <div id="medicine-input" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-capsule"></i> Thông Tin Thuốc
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label required">Tên Thuốc:</label>
+                        <input type="text" id="medicineName" class="form-control" placeholder="Nhập tên thuốc">
+                    </div>
+                    <div class="form-row-2col">
+                        <div class="form-group">
+                            <label class="form-label required">Đơn Vị Tính:</label>
+                            <select id="medicineUnit" class="form-control">
+                                <option value="">-- Chọn đơn vị tính --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label required">Giá Tiền:</label>
+                            <input type="number" id="medicinePrice" class="form-control" placeholder="Nhập giá tiền" min="0" step="100">
+                            <label class="form-label required" style="margin-top: 12px;">Số Lượng:</label>
+                            <input type="number" id="medicineQuantity" class="form-control" placeholder="Nhập số lượng thuốc" min="0" step="1">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Cách Dùng:</label>
+                        <select id="medicineCachDungSelect" class="form-control" onchange="onCachDungChange()">
+                            <option value="">-- Chọn cách dùng --</option>
+                        </select>
+                        <div id="medicineCachDungLabel" style="display:none; margin-top:6px; color:#333; font-weight:600;"></div>
+                        <small id="cachdung-help" style="display:block; margin-top:6px; color:#666;">Chọn một cách dùng từ danh sách.</small>
+                    </div>
+                    <button class="btn-primary" onclick="saveMedicine()">Lưu</button>
+                    <button class="btn-secondary" onclick="clearMedicineForm()">Xóa</button>
+                    <div style="margin-top: 10px; font-weight: 600; color: #1f3a93;">
+                        QĐ6: Thay đổi tỷ lệ tính đơn giá bán thuốc (Đơn giá bán = 105% x Đơn giá nhập)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disease Input -->
+        <div id="disease-input" class="content-section">
+            <div class="card">
+                <div class="card-header">Nhập Danh Sách Loại Bệnh</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label required">Tên Bệnh:</label>
+                        <input type="text" id="disease-name" class="form-control" placeholder="Nhập tên bệnh">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mô Tả:</label>
+                        <textarea id="disease-desc" class="form-control" placeholder="Nhập mô tả bệnh"></textarea>
+                    </div>
+                    <button class="btn-primary" onclick="saveDisease()">Lưu</button>
+                    <button class="btn-secondary" onclick="clearDiseaseForm()">Xóa</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Report -->
+        <div id="revenue-report" class="content-section">
+            <div class="card">
+                <div class="card-header">Báo Cáo Doanh Thu Theo Tháng</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">Chọn Tháng:</label>
+                        <input type="month" id="revenueMonth" class="form-control" onchange="filterRevenueByMonth()">
+                    </div>
+                    <canvas id="revenueChart" style="max-height: 400px;"></canvas>
+                    <div class="table-responsive" style="margin-top: 20px;">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th colspan="5" style="text-align: center;">THỐNG KÊ DOANH THU THEO THÁNG</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="5" style="text-align: center;">Tháng: <span id="revenueMonthLabel">............</span></th>
+                                </tr>
+                                <tr>
+                                    <th style="width: 80px;">STT</th>
+                                    <th>Ngày</th>
+                                    <th>Số Bệnh Nhân</th>
+                                    <th>Doanh Thu</th>
+                                    <th>Tỷ Lệ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="revenueTableBody">
+                                <tr>
+                                    <td colspan="5" class="no-results">Nhập tháng để xem thống kê...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medicine Stats -->
+        <div id="medicine-stats" class="content-section">
+            <div class="card">
+                <div class="card-header">Thống Kê Sử Dụng Thuốc</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">Chọn Tháng:</label>
+                        <input type="month" id="statsMonth" class="form-control" onchange="filterStatsByMonth()">
+                    </div>
+                    <canvas id="medicineStatsChart" style="max-height: 400px;"></canvas>
+                    <div class="table-responsive" style="margin-top: 20px;">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th colspan="6" style="text-align: center;">THỐNG KÊ SỬ DỤNG THUỐC THEO THÁNG</th>
+                                </tr>
+                                <tr>
+                                    <th colspan="6" style="text-align: center;">Tháng: <span id="statsMonthLabel">............</span></th>
+                                </tr>
+                                <tr>
+                                    <th style="width: 80px;">STT</th>
+                                    <th>Mã Thuốc</th>
+                                    <th>Thuốc</th>
+                                    <th>Đơn Vị</th>
+                                    <th>Số Lượng</th>
+                                    <th>Số Lần Dùng</th>
+                                </tr>
+                            </thead>
+                            <tbody id="medicineStatsTableBody">
+                                <tr>
+                                    <td colspan="6" class="no-results">Nhập tháng để xem thống kê...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Regulations -->
+        <div id="regulations" class="content-section">
+            <div class="card">
+                <div class="card-header">Thay Đổi Quy Định</div>
+                <div class="card-body">
+                    <table class="regulations-table">
+                        <thead>
+                            <tr>
+                                <th>Tên quy định</th>
+                                <th>Giá trị</th>
+                            </tr>
+                        </thead>
+                        <tbody id="regulationTableBody">
+                            <tr>
+                                <td class="label-cell">Số bệnh nhân tối đa trong ngày</td>
+                                <td><input type="number" id="reg-max-patients" min="1" step="1"></td>
+                            </tr>
+                            <tr>
+                                <td class="label-cell">Thời gian lưu lịch sử khám (năm)</td>
+                                <td><input type="number" id="reg-history-years" min="1" step="1"></td>
+                            </tr>
+                            <tr>
+                                <td class="label-cell">Tiền khám (VND)</td>
+                                <td><input type="number" id="reg-exam-fee" min="1" step="1"></td>
+                            </tr>
+                            <tr>
+                                <td class="label-cell">Tỷ lệ đơn giá bán thuốc (%)</td>
+                                <td><input type="number" id="reg-medicine-markup" min="1" step="1"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div id="regulations-error" class="alert-box alert-error" style="display: none; margin-top: 12px;">
+                        Invalid value. Please enter a positive number.
+                    </div>
+
+                    <div class="regulations-actions">
+                        <button class="btn-primary" onclick="updateRegulations()">Cập nhật quy định</button>
+                        <button class="btn-secondary" onclick="resetRegulations()">Khôi phục mặc định</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROFILE SECTION -->
+        <div id="profile" class="content-section active">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-person-circle"></i> Hồ Sơ Cá Nhân - Quản Trị Viên
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 30px; align-items: start;">
+                        <!-- Profile Avatar Section -->
+                        <div style="text-align: center;">
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                                <i class="bi bi-person-fill" style="font-size: 80px; color: white;"></i>
+                            </div>
+                            <h3 style="margin: 15px 0 0 0; color: #1f3a93;" id="profile-name">Nguyễn Văn Quản</h3>
+                            <p style="margin: 5px 0; color: #666; font-size: 14px;" id="profile-position">Quản Trị Viên</p>
+                            <p style="margin: 10px 0; color: #999; font-size: 12px;" id="profile-department">Phòng Quản Trị</p>
+                        </div>
+
+                        <!-- Profile Information Section -->
+                        <div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                                <!-- Left Column -->
+                                <div>
+                                    <h5 style="color: #1f3a93; margin-bottom: 15px; font-weight: 700; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Thông Tin Cơ Bản</h5>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="font-weight: 600; color: #666; font-size: 13px; display: block; margin-bottom: 5px;">Mã Nhân Viên</label>
+                                        <p style="margin: 0; color: #1f3a93; font-weight: 600;" id="profile-employee-id">AD001</p>
+                                    </div>
+
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="font-weight: 600; color: #666; font-size: 13px; display: block; margin-bottom: 5px;">Ngày Sinh</label>
+                                        <p style="margin: 0; color: #1f3a93; font-weight: 600;" id="profile-dob">01/01/1980</p>
+                                    </div>
+
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="font-weight: 600; color: #666; font-size: 13px; display: block; margin-bottom: 5px;">Giới Tính</label>
+                                        <p style="margin: 0; color: #1f3a93; font-weight: 600;" id="profile-gender">Nam</p>
+                                    </div>
+
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="font-weight: 600; color: #666; font-size: 13px; display: block; margin-bottom: 5px;">CCCD</label>
+                                        <p style="margin: 0; color: #1f3a93; font-weight: 600;" id="profile-citizen">987654321098</p>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column -->
+                                <div>
+                                    <h5 style="color: #1f3a93; margin-bottom: 15px; font-weight: 700; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Thông Tin Liên Hệ</h5>
+                                    
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="font-weight: 600; color: #666; font-size: 13px; display: block; margin-bottom: 5px;">Số Điện Thoại</label>
+                                        <p style="margin: 0; color: #1f3a93; font-weight: 600;" id="profile-phone">0912345678</p>
+                                    </div>
+
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="font-weight: 600; color: #666; font-size: 13px; display: block; margin-bottom: 5px;">Email</label>
+                                        <p style="margin: 0; color: #1f3a93; font-weight: 600;" id="profile-email">admin@clinic.com</p>
+                                    </div>
+
+                                    <div style="margin-bottom: 15px;">
+                                        <label style="font-weight: 600; color: #666; font-size: 13px; display: block; margin-bottom: 5px;">Địa Chỉ</label>
+                                        <p style="margin: 0; color: #1f3a93; font-weight: 600;" id="profile-address">456 Đường Lê Lợi, TP.HCM</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Work Information -->
+                            <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                                <h5 style="color: #1f3a93; margin-bottom: 15px; font-weight: 700; border-bottom: 2px solid #667eea; padding-bottom: 10px;">Thông Tin Công Việc</h5>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                    <div>
+                                        <label style="font-weight: 600; color: #666; font-size: 13px; display: block; margin-bottom: 5px;">Phòng Ban</label>
+                                        <p style="margin: 0; color: #1f3a93; font-weight: 600;" id="profile-dept">Phòng Quản Trị</p>
+                                    </div>
+                                    <div>
+                                        <label style="font-weight: 600; color: #666; font-size: 13px; display: block; margin-bottom: 5px;">Chức Vụ</label>
+                                        <p style="margin: 0; color: #1f3a93; font-weight: 600;" id="profile-title">Quản Trị Viên</p>
+                                    </div>
+                                    <div>
+                                        <label style="font-weight: 600; color: #666; font-size: 13px; display: block; margin-bottom: 5px;">Ngày Bắt Đầu Làm Việc</label>
+                                        <p style="margin: 0; color: #1f3a93; font-weight: 600;" id="profile-start-date">01/01/2010</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let medicineList = [];
+        let diseaseList = [];
+        let patientList = [];
+        let examList = [];
+        let importReceiptList = [];
+        let selectedImportReceipt = null;
+        let dvtList = [];
+        const mockPatients = [
+            { id: 'BN001', name: 'Nguyễn Văn A', birth: 1985, gender: 'Nam', receptionDate: '2024-04-20', notes: 'Cảm cúm' },
+            { id: 'BN002', name: 'Trần Thị B', birth: 1990, gender: 'Nữ', receptionDate: '2024-04-22', notes: 'Viêm phế quản' },
+            { id: 'BN003', name: 'Lê Văn C', birth: 1992, gender: 'Nam', receptionDate: '2024-04-24', notes: 'Đau đầu' },
+            { id: 'BN004', name: 'Phạm Thị D', birth: 1988, gender: 'Nữ', receptionDate: '2024-04-25', notes: 'Rối loạn tiêu hóa' }
+        ];
+        const mockExams = [
+            { id: 'KH001', patientId: 'BN001', patientName: 'Nguyễn Văn A', gender: 'Nam', birth: 1985, examDate: '2024-04-20' },
+            { id: 'KH002', patientId: 'BN002', patientName: 'Trần Thị B', gender: 'Nữ', birth: 1990, examDate: '2024-04-22' },
+            { id: 'KH003', patientId: 'BN003', patientName: 'Lê Văn C', gender: 'Nam', birth: 1992, examDate: '2024-04-24' }
+        ];
+        const mockDailyExams = [
+            { date: '2024-04-20', id: 'KH001', patientName: 'Nguyễn Văn A', gender: 'Nam', birth: 1985 },
+            { date: '2024-04-20', id: 'KH004', patientName: 'Phạm Thị D', gender: 'Nữ', birth: 1988 },
+            { date: '2024-04-22', id: 'KH002', patientName: 'Trần Thị B', gender: 'Nữ', birth: 1990 },
+            { date: '2024-04-24', id: 'KH003', patientName: 'Lê Văn C', gender: 'Nam', birth: 1992 }
+        ];
+        const mockDiseases = [
+            { id: 'B001', name: 'Cảm Cúm', desc: 'Bệnh do virus gây ra, triệu chứng: sốt, ho, sổ mũi, mệt mỏi' },
+            { id: 'B002', name: 'Viêm Phế Quản', desc: 'Viêm đường hô hấp, triệu chứng: ho kéo dài, khó thở, đau ngực' },
+            { id: 'B003', name: 'Đau Đầu', desc: 'Triệu chứng đau ở vùng đầu, có thể kèm theo chóng mặt' },
+            { id: 'B004', name: 'Rối Loạn Tiêu Hóa', desc: 'Vấn đề về hệ tiêu hóa, triệu chứng: buồn nôn, đau bụng, tiêu chảy' },
+            { id: 'B005', name: 'Viêm Tai Mũi Họng', desc: 'Viêm đường hô hấp trên, triệu chứng: đau họng, khó nuốt, sốt' }
+        ];
+        const regulationDefaults = {
+            maxPatientsPerDay: 40,
+            historyRetentionYears: 5,
+            examFee: 30000,
+            medicineMarkupPercent: 105
+        };
+
+        const regulationNameMap = {
+            maxPatientsPerDay: 'SoBenhNhanToiDa',
+            historyRetentionYears: 'ThoiGianLuuLichSuKham',
+            examFee: 'TienKham',
+            medicineMarkupPercent: 'TyLeTinhDonGiaBan'
+        };
+
+        async function loadRegulations() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/tham-so`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }
+                });
+                if (!response.ok) {
+                    throw new Error('Không tải được dữ liệu quy định');
+                }
+                const payload = await response.json();
+                const items = Array.isArray(payload?.data) ? payload.data : [];
+                const values = items.reduce((acc, item) => {
+                    acc[item.TenThamSo] = Number(item.GiaTri);
+                    return acc;
+                }, {});
+
+                const normalized = {
+                    maxPatientsPerDay: values['SoBenhNhanToiDa'] ?? regulationDefaults.maxPatientsPerDay,
+                    historyRetentionYears: values['ThoiGianLuuLichSuKham'] ?? regulationDefaults.historyRetentionYears,
+                    examFee: values['TienKham'] ?? regulationDefaults.examFee,
+                    medicineMarkupPercent: (() => {
+                        const raw = values['TyLeTinhDonGiaBan'] ?? regulationDefaults.medicineMarkupPercent;
+                        return raw > 10 ? raw : raw * 100;
+                    })()
+                };
+                setRegulationValues(normalized);
+            } catch (error) {
+                console.error('Lỗi khi tải quy định:', error);
+                setRegulationValues(regulationDefaults);
+                showAlert('Không thể tải quy định từ máy chủ, đang dùng giá trị mặc định.', 'warning');
+            }
+        }
+
+        const regulationsTemplate = `QUY ĐỊNH QUẢN LÝ PHÒNG KHÁM TRIỆU DÂN
+
+I. NGUYÊN TẮC CHUNG
+1. Mục đích: Quy định này nhằm đưa ra các quy định chung về hoạt động của phòng khám, đảm bảo chất lượng dịch vụ, bảo vệ quyền lợi bệnh nhân và nhân viên.
+2. Phạm vi áp dụng: Quy định này áp dụng cho toàn bộ nhân viên, bệnh nhân và những người liên quan đến hoạt động của phòng khám.
+
+II. QUY ĐỊNH VỀ GIỜ LÀM VIỆC
+1. Giờ làm việc chính thức:
+   - Thứ Hai - Thứ Bảy: 07:00 – 20:00
+   - Chủ Nhật: 08:00 – 12:00
+2. Yêu cầu cho nhân viên:
+   - Nhân viên phải có mặt 15 phút trước giờ làm việc chính thức
+   - Tuân thủ đúng giờ, không được đi muộn hoặc về sớm
+   - Sử dụng hệ thống chấm công để ghi nhận thời gian làm việc
+
+III. QUY ĐỊNH VỀ BỆNH NHÂN
+1. Quyền và trách nhiệm của bệnh nhân:
+   - Bệnh nhân phải tuân thủ quy trình khám theo hướng dẫn của phòng khám
+   - Bệnh nhân phải thanh toán đầy đủ chi phí khám và điều trị
+   - Bệnh nhân phải cung cấp thông tin chính xác và đầy đủ về tình trạng sức khỏe
+   - Bệnh nhân có quyền khiếu nại nếu không hài lòng với dịch vụ
+
+2. Quy trình tiếp nhận bệnh nhân:
+   - Bệnh nhân được tiếp nhận theo thứ tự đăng ký
+   - Tối đa 40 bệnh nhân/ngày
+   - Phí khám cơ bản: 30.000 VNĐ
+   - Bác sĩ sẽ cấp phiếu khám và hướng dẫn quy trình
+
+IV. QUY ĐỊNH VỀ AN TOÀN & BẢO VỆ
+1. Vệ sinh và khử trùng:
+   - Tuân thủ quy trình vệ sinh, khử trùng theo tiêu chuẩn y tế
+   - Bắt buộc sử dụng trang bị bảo vệ (khẩu trang, găng tay) khi cần thiết
+   - Vệ sinh tay thường xuyên
+   - Làm sạch và khử trùng dụng cụ y tế sau mỗi lần sử dụng
+
+2. Bảo mật thông tin:
+   - Bảo mật thông tin cá nhân và y tế của bệnh nhân
+   - Không được chia sẻ hoặc công khai thông tin bệnh nhân
+   - Lưu giữ hồ sơ bệnh nhân trong thời gian qui định
+   - Chỉ người có thẩm quyền mới được phép truy cập thông tin bệnh nhân`;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRegulations();
+            initRevenueChart();
+            initMedicineStatsChart();
+        });
+
+        function switchTab(e, tabId) {
+            e.preventDefault();
+            document.querySelectorAll('.content-section').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            document.querySelectorAll('.nav-menu a').forEach(link => link.classList.remove('active'));
+            e.currentTarget.classList.add('active');
+
+            const titles = {
+                'medical-record-search': 'Tra Cứu Phiếu Khám Bệnh',
+                'patient-search': 'Tra Cứu Bệnh Nhân',
+                'disease-search': 'Tra Cứu Danh Sách Loại Bệnh',
+                'import-receipt-search': 'Tra Cứu Phiếu Nhập Thuốc',
+                'daily-exam': 'Tra Cứu Danh Sách Khám Bệnh Theo Ngày',
+                'medicine-input': 'Thông Tin Thuốc',
+                'disease-input': 'Nhập Danh Sách Loại Bệnh',
+                'revenue-report': 'Báo Cáo Doanh Thu Theo Tháng',
+                'medicine-stats': 'Thống Kê Sử Dụng Thuốc',
+                'regulations': 'Quy Định Phòng Khám',
+                'profile': 'Hồ Sơ Cá Nhân'
+            };
+            document.getElementById('page-title').textContent = titles[tabId] || 'Dashboard';
+        }
+
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert-box alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.style.display = 'block';
+            document.getElementById('alert-container').appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 3000);
+        }
+
+        function renderExamResults(exams) {
+            const resultsBody = document.getElementById('examSearchResults');
+            if (!exams || exams.length === 0) {
+                resultsBody.innerHTML = '<tr><td colspan="7" class="no-results">Chưa có dữ liệu phiếu khám</td></tr>';
+                return;
+            }
+            const sortedExams = sortByNumericId(exams, e => e.MaPK ?? e.id);
+            resultsBody.innerHTML = sortedExams.map((e, idx) => {
+                const id = e.MaPK || e.id;
+                const patientName = e.TenBN || e.patientName;
+                const gender = e.GioiTinh || e.gender;
+                const birth = formatDate(e.NgaySinh || e.birth);
+                const examDate = formatDate(e.NgayKham || e.examDate);
+                return `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${id}</td>
+                    <td>${patientName}</td>
+                    <td>${gender}</td>
+                    <td>${birth}</td>
+                    <td>${examDate}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="startTreatment('${id}', '${patientName}', '${gender}', '${formatDate(e.NgaySinh || e.birth)}')">
+                            <i class="bi bi-stethoscope"></i> Khám bệnh
+                        </button>
+                    </td>
+                </tr>
+            `;
+            }).join('');
+        }
+
+        function searchExams() {
+            const searchInput = document.getElementById('examSearchInput').value.toLowerCase();
+            if (!searchInput) {
+                renderExamResults(examList.length ? examList : mockExams);
+                return;
+            }
+
+            const filtered = (examList.length ? examList : mockExams).filter(e =>
+                String(e.MaPK || e.id).toLowerCase().includes(searchInput) ||
+                String(e.TenBN || e.patientName).toLowerCase().includes(searchInput)
+            );
+
+            if (filtered.length === 0) {
+                document.getElementById('examSearchResults').innerHTML = '<tr><td colspan="7" class="no-results">Không tìm thấy kết quả</td></tr>';
+                return;
+            }
+
+            renderExamResults(filtered);
+        }
+
+        function startTreatment(examId, patientName) {
+            showAlert(`Mở phiếu khám: ${examId} - ${patientName}`, 'success');
+        }
+
+        function renderPatientResults(patients) {
+            const resultsBody = document.getElementById('patientSearchResults');
+            if (!patients || patients.length === 0) {
+                resultsBody.innerHTML = '<tr><td colspan="6" class="no-results">Chưa có dữ liệu bệnh nhân</td></tr>';
+                return;
+            }
+            const sortedPatients = sortByNumericId(patients, p => p.MaBN ?? p.id);
+            resultsBody.innerHTML = sortedPatients.map(p => {
+                const id = p.MaBN || p.id;
+                const name = p.TenBN || p.name;
+                const birth = formatDate(p.NgaySinh || p.birth);
+                const gender = p.GioiTinh || p.gender;
+                const receptionDate = formatDate(p.NgayTiepNhan || p.receptionDate);
+                const notes = p.notes || 'Không có';
+                return `
+                <tr>
+                    <td>${id}</td>
+                    <td>${name}</td>
+                    <td>${birth}</td>
+                    <td>${gender}</td>
+                    <td>${receptionDate}</td>
+                    <td>${notes}</td>
+                </tr>
+            `;
+            }).join('');
+        }
+
+        function searchPatients() {
+            const searchInput = document.getElementById('patientSearchInput').value.toLowerCase();
+            if (!searchInput) {
+                renderPatientResults(patientList.length ? patientList : mockPatients);
+                return;
+            }
+
+            const filtered = (patientList.length ? patientList : mockPatients).filter(p =>
+                String(p.MaBN || p.id).toLowerCase().includes(searchInput) ||
+                String(p.TenBN || p.name).toLowerCase().includes(searchInput)
+            );
+
+            if (filtered.length === 0) {
+                document.getElementById('patientSearchResults').innerHTML = '<tr><td colspan="6" class="no-results">Không tìm thấy kết quả</td></tr>';
+                return;
+            }
+
+            renderPatientResults(filtered);
+        }
+
+        function renderImportReceiptResults(receipts) {
+            const resultsBody = document.getElementById('importReceiptSearchResults');
+            if (!resultsBody) return;
+            if (!receipts || receipts.length === 0) {
+                resultsBody.innerHTML = '<tr><td colspan="4" class="no-results">Chưa có dữ liệu phiếu nhập thuốc</td></tr>';
+                return;
+            }
+
+            const sortedReceipts = sortByNumericId(receipts, r => r.MaPN ?? r.id);
+            resultsBody.innerHTML = sortedReceipts.map(r => {
+                const id = r.MaPN ?? r.id;
+                const date = formatDate(r.NgayNhap || r.date);
+                const total = `${formatCurrency(r.TongTienNhap || r.total || 0)} VND`;
+                return `
+                <tr>
+                    <td>${id}</td>
+                    <td>${date}</td>
+                    <td>${total}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="viewImportReceiptDetail(${id})">
+                            <i class="bi bi-eye"></i> Xem chi tiết
+                        </button>
+                    </td>
+                </tr>
+            `;
+            }).join('');
+        }
+
+        function searchImportReceipts() {
+            const searchInput = document.getElementById('importReceiptSearchInput').value.toLowerCase();
+            if (!searchInput) {
+                renderImportReceiptResults(importReceiptList);
+                return;
+            }
+
+            const filtered = importReceiptList.filter(r => {
+                const id = String(r.MaPN ?? r.id ?? '').toLowerCase();
+                const rawDate = String(r.NgayNhap || r.date || '').toLowerCase();
+                const displayDate = formatDate(r.NgayNhap || r.date).toLowerCase();
+                return id.includes(searchInput) || rawDate.includes(searchInput) || displayDate.includes(searchInput);
+            });
+
+            if (filtered.length === 0) {
+                document.getElementById('importReceiptSearchResults').innerHTML = '<tr><td colspan="4" class="no-results">Không tìm thấy kết quả</td></tr>';
+                return;
+            }
+
+            renderImportReceiptResults(filtered);
+        }
+
+        const API_BASE_URL = 'http://localhost:5000/api';
+
+        function getAuthToken() {
+            return sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+        }
+
+        function getAuthHeaders() {
+            const token = getAuthToken();
+            return token ? { Authorization: `Bearer ${token}` } : {};
+        }
+
+        async function fetchBackendData(path) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${path}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
+                    }
+                });
+                if (!response.ok) {
+                    console.warn(`Fetch ${path} failed`, response.status);
+                    return [];
+                }
+                const payload = await response.json();
+                return Array.isArray(payload?.data) ? payload.data : [];
+            } catch (error) {
+                console.warn(`Fetch ${path} error`, error);
+                return [];
+            }
+        }
+
+        async function fetchImportReceipts() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/phieunhap?limit=1000`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
+                    }
+                });
+                if (!response.ok) {
+                    console.warn('Fetch /phieunhap failed', response.status);
+                    return [];
+                }
+                const payload = await response.json();
+                const data = payload?.data;
+                if (Array.isArray(data)) return data;
+                if (Array.isArray(data?.data)) return data.data;
+                return [];
+            } catch (error) {
+                console.warn('Fetch /phieunhap error', error);
+                return [];
+            }
+        }
+
+        async function fetchImportReceiptById(id) {
+            const response = await fetch(`${API_BASE_URL}/phieunhap/${id}`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...getAuthHeaders()
+                }
+            });
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(payload?.message || `Không thể lấy chi tiết phiếu nhập (${response.status})`);
+            }
+            return payload?.data || payload;
+        }
+
+        async function postBackendData(path, data) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${path}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getAuthHeaders()
+                    },
+                    body: JSON.stringify(data)
+                });
+                const payload = await response.json();
+                if (!response.ok) {
+                    throw new Error(payload?.message || `Request failed with status ${response.status}`);
+                }
+                return { success: true, data: payload };
+            } catch (error) {
+                console.error(`Post ${path} error`, error);
+                throw error;
+            }
+        }
+
+        async function loadLookupData() {
+            patientList = await fetchBackendData('/benh-nhan/full');
+            examList = await fetchBackendData('/phieu-kham');
+            diseaseList = await fetchBackendData('/benh');
+            medicineList = await fetchBackendData('/thuoc');
+            importReceiptList = await fetchImportReceipts();
+            // Load cách dùng list for dropdown
+            cachDungList = await fetchBackendData('/cachdung');
+            const cachDungSel = document.getElementById('medicineCachDungSelect');
+            if (cachDungSel) {
+                cachDungSel.innerHTML = '<option value="">-- Chọn cách dùng --</option>';
+                cachDungList.forEach(cd => {
+                    const opt = document.createElement('option');
+                    opt.value = cd.MaCachDung;
+                    opt.text = `${cd.MoTaCachDung}`;
+                    cachDungSel.appendChild(opt);
+                });
+            }
+            // Load đơn vị tính list for dropdown
+            dvtList = await fetchBackendData('/dvt');
+            const unitSel = document.getElementById('medicineUnit');
+            if (unitSel) {
+                unitSel.innerHTML = '<option value="">-- Chọn đơn vị tính --</option>';
+                dvtList.forEach(dvt => {
+                    const opt = document.createElement('option');
+                    opt.value = dvt.MaDVT;
+                    opt.text = dvt.TenDVT;
+                    unitSel.appendChild(opt);
+                });
+            }
+        }
+
+        function onCachDungChange() {
+            const sel = document.getElementById('medicineCachDungSelect');
+            const label = document.getElementById('medicineCachDungLabel');
+            if (!sel || !label) return;
+            const val = sel.value;
+            if (!val) {
+                label.style.display = 'none';
+                label.innerText = '';
+                return;
+            }
+            const cd = cachDungList.find(x => String(x.MaCachDung) === String(val));
+            if (cd) {
+                label.innerText = cd.MoTaCachDung || '(Không có mô tả)';
+                label.style.display = 'block';
+            } else {
+                label.innerText = '(Cách dùng không tìm thấy)';
+                label.style.display = 'block';
+            }
+        }
+
+        async function initAdminPage() {
+            await loadProfile();
+            await loadLookupData();
+            renderExamResults(examList.length ? examList : mockExams);
+            renderPatientResults(patientList.length ? patientList : mockPatients);
+            renderDiseaseResults(diseaseList);
+            renderImportReceiptResults(importReceiptList);
+        }
+
+        function formatDate(value) {
+            if (!value) return '';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '';
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        function sortByNumericId(items, getId) {
+            return [...(items || [])].sort((a, b) => {
+                const idA = Number(getId(a));
+                const idB = Number(getId(b));
+                if (Number.isFinite(idA) && Number.isFinite(idB)) return idA - idB;
+                return String(getId(a) ?? '').localeCompare(String(getId(b) ?? ''), 'vi', { numeric: true });
+            });
+        }
+
+        function mapPositionByMaCV(maCV, roleName) {
+            const map = { 1: 'Bác Sĩ', 2: 'Lễ Tân', 3: 'Admin' };
+            return map[maCV] || roleName || 'Nhân Viên';
+        }
+
+        function formatEmployeeCode(roleName, maNV) {
+            const padded = String(maNV).padStart(3, '0');
+            const roleKey = (roleName || '').toLowerCase();
+            if (roleKey.includes('admin')) return `admin${padded}`;
+            if (roleKey.includes('bác')) return `BS${padded}`;
+            if (roleKey.includes('lễ')) return `LT${padded}`;
+            return `NV${padded}`;
+        }
+
+        function hideDepartmentFields() {
+            const avatarDepartment = document.getElementById('profile-department');
+            if (avatarDepartment) avatarDepartment.style.display = 'none';
+
+            const workDept = document.getElementById('profile-dept');
+            const workDeptContainer = workDept?.closest('div');
+            if (workDeptContainer) workDeptContainer.style.display = 'none';
+        }
+
+        function applyProfileData(profile) {
+            const position = mapPositionByMaCV(profile.MaCV, profile.TenCV);
+            const employeeCode = formatEmployeeCode(profile.TenCV, profile.MaNV);
+
+            const currentUser = document.getElementById('current-user');
+            if (currentUser) currentUser.textContent = profile.TenNV || currentUser.textContent;
+
+            const headerRoleEl = document.getElementById('header-role');
+            if (headerRoleEl) headerRoleEl.textContent = position;
+
+            const nameEl = document.getElementById('profile-name');
+            if (nameEl) nameEl.textContent = profile.TenNV || nameEl.textContent;
+
+            const positionEl = document.getElementById('profile-position');
+            if (positionEl) positionEl.textContent = position;
+
+            const idEl = document.getElementById('profile-employee-id');
+            if (idEl) idEl.textContent = employeeCode;
+
+            const dobEl = document.getElementById('profile-dob');
+            if (dobEl) dobEl.textContent = formatDate(profile.NgaySinh) || dobEl.textContent;
+
+            const genderEl = document.getElementById('profile-gender');
+            if (genderEl) genderEl.textContent = profile.GioiTinh || genderEl.textContent;
+
+            const citizenEl = document.getElementById('profile-citizen');
+            if (citizenEl) citizenEl.textContent = profile.CCCD || citizenEl.textContent;
+
+            const phoneEl = document.getElementById('profile-phone');
+            if (phoneEl) phoneEl.textContent = profile.SDT || phoneEl.textContent;
+
+            const emailEl = document.getElementById('profile-email');
+            if (emailEl) emailEl.textContent = profile.Email || emailEl.textContent;
+
+            const addressEl = document.getElementById('profile-address');
+            if (addressEl) addressEl.textContent = profile.DiaChi || addressEl.textContent;
+
+            const titleEl = document.getElementById('profile-title');
+            if (titleEl) titleEl.textContent = position;
+
+            const startDateEl = document.getElementById('profile-start-date');
+            if (startDateEl) startDateEl.textContent = formatDate(profile.NgayBatDauLamViec) || startDateEl.textContent;
+
+            hideDepartmentFields();
+        }
+
+        function applyAuthFallback() {
+            const storedName = sessionStorage.getItem('auth_name') || localStorage.getItem('auth_name');
+            const storedRole = sessionStorage.getItem('auth_role') || localStorage.getItem('auth_role');
+            const storedId = sessionStorage.getItem('auth_employee_id') || localStorage.getItem('auth_employee_id');
+
+            if (storedName) {
+                const currentUser = document.getElementById('current-user');
+                if (currentUser) currentUser.textContent = storedName;
+
+                const nameEl = document.getElementById('profile-name');
+                if (nameEl) nameEl.textContent = storedName;
+            }
+
+            if (storedRole) {
+                const headerRoleEl = document.getElementById('header-role');
+                if (headerRoleEl) headerRoleEl.textContent = storedRole;
+
+                const positionEl = document.getElementById('profile-position');
+                if (positionEl) positionEl.textContent = storedRole;
+
+                const titleEl = document.getElementById('profile-title');
+                if (titleEl) titleEl.textContent = storedRole;
+            }
+
+            if (storedId && storedRole) {
+                const idEl = document.getElementById('profile-employee-id');
+                if (idEl) idEl.textContent = formatEmployeeCode(storedRole, storedId);
+            }
+        }
+
+        async function loadProfile() {
+            const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+            if (!token) {
+                applyAuthFallback();
+                return;
+            }
+
+            applyAuthFallback();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/nhan-vien/me`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    console.warn('Failed to load profile:', response.status);
+                    return;
+                }
+
+                const payload = await response.json();
+                if (!payload?.data) return;
+                applyProfileData(payload.data);
+            } catch (error) {
+                console.warn('Failed to load profile:', error);
+            }
+        }
+
+        window.addEventListener('load', initAdminPage);
+
+        function renderDiseaseResults(diseases) {
+            const resultsBody = document.getElementById('diseaseSearchResults');
+            if (!diseases || diseases.length === 0) {
+                resultsBody.innerHTML = '<tr><td colspan="3" class="no-results">Chưa có dữ liệu loại bệnh</td></tr>';
+                return;
+            }
+            const sortedDiseases = sortByNumericId(diseases, d => d.MaLoaiBenh ?? d.id);
+            resultsBody.innerHTML = sortedDiseases.map(d => {
+                const id = d.MaLoaiBenh || d.id;
+                const name = d.TenLoaiBenh || d.TenBenh || d.name || '';
+                const desc = d.MoTa || d.TrieuChung || d.desc || 'Không có mô tả';
+                return `
+                <tr>
+                    <td>${id}</td>
+                    <td>${name}</td>
+                    <td>${desc}</td>
+                </tr>
+            `;
+            }).join('');
+        }
+
+        function searchDiseases() {
+            const searchInput = document.getElementById('diseaseSearchInput').value.toLowerCase();
+            if (!diseaseList.length) {
+                document.getElementById('diseaseSearchResults').innerHTML = '<tr><td colspan="3" class="no-results">Chưa có dữ liệu loại bệnh</td></tr>';
+                return;
+            }
+
+            if (!searchInput) {
+                renderDiseaseResults(diseaseList);
+                return;
+            }
+
+            const filtered = diseaseList.filter(d =>
+                String(d.MaLoaiBenh || d.id).toLowerCase().includes(searchInput) ||
+                String(d.TenLoaiBenh || d.TenBenh || d.name || '').toLowerCase().includes(searchInput)
+            );
+
+            if (filtered.length === 0) {
+                document.getElementById('diseaseSearchResults').innerHTML = '<tr><td colspan="3" class="no-results">Không tìm thấy kết quả</td></tr>';
+                return;
+            }
+
+            renderDiseaseResults(filtered);
+        }
+
+        async function saveMedicine() {
+            const name = document.getElementById('medicineName').value.trim();
+            const unit = document.getElementById('medicineUnit').value;
+            const price = document.getElementById('medicinePrice').value.trim();
+            const quantity = document.getElementById('medicineQuantity').value.trim();
+            const sel = document.getElementById('medicineCachDungSelect');
+            const selected = sel ? sel.value : '';
+
+            // Validate required fields: name, đơn vị tính, price, and selected cách dùng from list
+            if (!name || !unit || !price || !quantity || !selected) {
+                showAlert('Vui lòng điền đầy đủ thông tin (chọn đơn vị tính và cách dùng từ danh sách)', 'error');
+                return;
+            }
+
+            const importPrice = parseFloat(price);
+            const importQuantity = parseInt(quantity, 10);
+            if (!Number.isFinite(importPrice) || importPrice <= 0 || !Number.isInteger(importQuantity) || importQuantity <= 0) {
+                showAlert('Giá tiền và số lượng phải lớn hơn 0', 'error');
+                return;
+            }
+
+            try {
+                const medicineData = {
+                    TenThuoc: name,
+                    MaDVT: unit,
+                    DonGiaBan: importPrice,
+                    SoLuongTon: 0
+                };
+
+                medicineData.MaCachDung = selected;
+
+                const result = await postBackendData('/thuoc', medicineData);
+                const createdMedicine = result?.data?.data;
+                if (!createdMedicine?.MaThuoc) {
+                    throw new Error('Không lấy được mã thuốc vừa tạo');
+                }
+
+                await postBackendData('/phieunhap', {
+                    NgayNhap: new Date().toISOString().slice(0, 10),
+                    ChiTiet: [{
+                        MaThuoc: createdMedicine.MaThuoc,
+                        DonGiaNhap: importPrice,
+                        SoLuongNhap: importQuantity
+                    }]
+                });
+
+                clearMedicineForm();
+                showAlert('Lưu thuốc thành công', 'success');
+
+                // Reload danh sách thuốc
+                medicineList = await fetchBackendData('/thuoc');
+                importReceiptList = await fetchImportReceipts();
+                renderImportReceiptResults(importReceiptList);
+            } catch (error) {
+                showAlert(`Lỗi: ${error.message}`, 'error');
+            }
+        }
+
+        function clearMedicineForm() {
+            document.getElementById('medicineName').value = '';
+            document.getElementById('medicineUnit').value = '';
+            document.getElementById('medicinePrice').value = '';
+            document.getElementById('medicineQuantity').value = '';
+            const sel = document.getElementById('medicineCachDungSelect');
+            if (sel) sel.value = '';
+            const label = document.getElementById('medicineCachDungLabel');
+            if (label) { label.style.display = 'none'; label.innerText = ''; }
+        }
+
+        async function saveDisease() {
+            const name = document.getElementById('disease-name').value.trim();
+            if (!name) {
+                showAlert('Vui lòng nhập tên bệnh', 'error');
+                return;
+            }
+            
+            try {
+                const diseaseData = {
+                    TenLoaiBenh: name
+                };
+                
+                const result = await postBackendData('/benh', diseaseData);
+                clearDiseaseForm();
+                showAlert('Lưu bệnh thành công', 'success');
+                
+                // Reload danh sách bệnh
+                diseaseList = await fetchBackendData('/benh');
+            } catch (error) {
+                showAlert(`Lỗi: ${error.message}`, 'error');
+            }
+        }
+
+        function clearDiseaseForm() {
+            document.getElementById('disease-name').value = '';
+            document.getElementById('disease-desc').value = '';
+        }
+
+        function filterExamByDate() {
+            const date = document.getElementById('examDate').value;
+            const resultsBody = document.getElementById('dailyExamResults');
+
+            if (!date) {
+                resultsBody.innerHTML = '<tr><td colspan="5" class="no-results">Nhập ngày khám...</td></tr>';
+                return;
+            }
+
+            const filtered = (examList.length ? examList : mockDailyExams).filter(e => {
+                const examDate = e.NgayKham || e.date;
+                return examDate === date;
+            });
+
+            if (filtered.length === 0) {
+                resultsBody.innerHTML = '<tr><td colspan="5" class="no-results">Không có dữ liệu cho ngày đã chọn</td></tr>';
+                return;
+            }
+
+            const sortedFiltered = sortByNumericId(filtered, e => e.MaPK ?? e.id);
+            resultsBody.innerHTML = sortedFiltered.map((e, idx) => {
+                const id = e.MaPK || e.id;
+                const patientName = e.TenBN || e.patientName;
+                const gender = e.GioiTinh || e.gender;
+                const birth = e.NgaySinh || e.birth;
+                return `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${id}</td>
+                    <td>${patientName}</td>
+                    <td>${gender}</td>
+                    <td>${birth}</td>
+                </tr>
+            `;
+            }).join('');
+        }
+
+        async function filterRevenueByMonth() {
+            const month = document.getElementById('revenueMonth').value;
+            const label = document.getElementById('revenueMonthLabel');
+            if (!month) {
+                if (label) label.textContent = '............';
+                // clear table and chart
+                if (revenueChartInstance) {
+                    revenueChartInstance.data.labels = [];
+                    revenueChartInstance.data.datasets[0].data = [];
+                    revenueChartInstance.update();
+                }
+                document.getElementById('revenueTableBody').innerHTML = '<tr><td colspan="5" class="no-results">Nhập tháng để xem thống kê...</td></tr>';
+                return;
+            }
+
+            const [year, monthNumber] = month.split('-');
+            const thang = parseInt(monthNumber, 10);
+            const nam = parseInt(year, 10);
+            if (label) label.textContent = `${thang}/${nam}`;
+
+            try {
+                const resp = await fetch(`${API_BASE_URL}/baocao/doanh-thu/thang-nam?thang=${thang}&nam=${nam}`, {
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }
+                });
+                if (!resp.ok) {
+                    const err = await resp.json().catch(()=>({}));
+                    showAlert(err?.message || `Không thể lấy báo cáo (${resp.status})`, 'error');
+                    return;
+                }
+                const payload = await resp.json();
+                const data = payload?.data || payload;
+
+                const chiTiet = Array.isArray(data?.ChiTiet) ? data.ChiTiet : [];
+
+                // update chart
+                const labels = chiTiet.map(r => String(r.Ngay).padStart(2,'0') + '/' + String(thang).padStart(2,'0'));
+                const values = chiTiet.map(r => Number(r.DoanhThu) || 0);
+                if (!revenueChartInstance) initRevenueChart();
+                if (revenueChartInstance) {
+                    revenueChartInstance.data.labels = labels;
+                    revenueChartInstance.data.datasets[0].data = values;
+                    revenueChartInstance.update();
+                }
+
+                // update table
+                const tbody = document.getElementById('revenueTableBody');
+                if (!tbody) return;
+                if (chiTiet.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="no-results">Không có dữ liệu cho tháng này</td></tr>';
+                } else {
+                    tbody.innerHTML = chiTiet.map((r, idx) => `
+                        <tr>
+                            <td>${idx+1}</td>
+                            <td>${String(r.Ngay).padStart(2,'0')}/${String(thang).padStart(2,'0')}</td>
+                            <td>${r.SoBenhNhan}</td>
+                            <td>${formatCurrency(r.DoanhThu)}</td>
+                            <td>${(Number(r.TyLe)*100).toFixed(2)}%</td>
+                        </tr>
+                    `).join('');
+                }
+
+            } catch (e) {
+                console.error('Fetch báo cáo lỗi', e);
+                showAlert('Lỗi khi lấy dữ liệu báo cáo', 'error');
+            }
+        }
+
+        function formatCurrency(v){
+            if (v == null) return '0';
+            return Number(v).toLocaleString('vi-VN');
+        }
+
+        function escapePrintText(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function openPrintWindow(html) {
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const win = window.open(url, '_blank', 'width=820,height=720');
+            if (win) {
+                win.onload = function() {
+                    win.print();
+                    URL.revokeObjectURL(url);
+                };
+            }
+        }
+
+        async function viewImportReceiptDetail(id) {
+            try {
+                selectedImportReceipt = await fetchImportReceiptById(id);
+                const detailPanel = document.getElementById('importReceiptDetailPanel');
+                const detailBody = document.getElementById('importReceiptDetailResults');
+                const details = sortByNumericId(selectedImportReceipt.ChiTiet || [], item => item.MaThuoc);
+
+                document.getElementById('importReceiptDetailCode').textContent = selectedImportReceipt.MaPN || id;
+                document.getElementById('importReceiptDetailDate').textContent = formatDate(selectedImportReceipt.NgayNhap);
+                document.getElementById('importReceiptDetailTotal').textContent = `${formatCurrency(selectedImportReceipt.TongTienNhap || 0)} VND`;
+
+                if (!details.length) {
+                    detailBody.innerHTML = '<tr><td colspan="5" class="no-results">Phiếu nhập này chưa có chi tiết thuốc</td></tr>';
+                } else {
+                    detailBody.innerHTML = details.map(item => `
+                        <tr>
+                            <td>${item.MaThuoc}</td>
+                            <td>${item.TenThuoc || ''}</td>
+                            <td>${formatCurrency(item.DonGiaNhap)} VND</td>
+                            <td>${Number(item.SoLuong) || 0}</td>
+                            <td>${formatCurrency(item.ThanhTien)} VND</td>
+                        </tr>
+                    `).join('');
+                }
+
+                detailPanel.style.display = 'block';
+                document.getElementById('importReceiptModalOverlay').style.display = 'block';
+            } catch (error) {
+                showAlert(`Lỗi: ${error.message}`, 'error');
+            }
+        }
+
+        function closeImportReceiptDetail() {
+            const detailPanel = document.getElementById('importReceiptDetailPanel');
+            const overlay = document.getElementById('importReceiptModalOverlay');
+            if (detailPanel) detailPanel.style.display = 'none';
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function printImportReceipt() {
+            if (!selectedImportReceipt) {
+                showAlert('Vui lòng chọn phiếu nhập thuốc để in', 'warning');
+                return;
+            }
+
+            const closeTag = '</';
+            const details = sortByNumericId(selectedImportReceipt.ChiTiet || [], item => item.MaThuoc);
+            const today = new Date().toLocaleDateString('vi-VN');
+            const maPN = selectedImportReceipt.MaPN || '';
+            const ngayNhap = formatDate(selectedImportReceipt.NgayNhap);
+            const tongTien = `${formatCurrency(selectedImportReceipt.TongTienNhap || 0)} VND`;
+            const rows = details.map((item, idx) => {
+                const td = 'td style="border:1px solid #ccc;padding:6px;';
+                return '<tr>'
+                    + '<' + td + 'text-align:center;">' + (idx + 1) + closeTag + 'td>'
+                    + '<' + td + 'text-align:center;">' + escapePrintText(item.MaThuoc) + closeTag + 'td>'
+                    + '<' + td + '">' + escapePrintText(item.TenThuoc || '') + closeTag + 'td>'
+                    + '<' + td + 'text-align:right;">' + formatCurrency(item.DonGiaNhap) + closeTag + 'td>'
+                    + '<' + td + 'text-align:center;">' + (Number(item.SoLuong) || 0) + closeTag + 'td>'
+                    + '<' + td + 'text-align:right;">' + formatCurrency(item.ThanhTien) + closeTag + 'td>'
+                    + closeTag + 'tr>';
+            }).join('');
+
+            const noRows = '<tr><td colspan="6" style="text-align:center;padding:10px;">Không có thuốc trong phiếu nhập' + closeTag + 'td>' + closeTag + 'tr>';
+            const css = 'body{font-family:Arial,sans-serif;padding:30px;font-size:14px;}'
+                + 'h2{text-align:center;color:#1f3a93;margin-bottom:4px;}'
+                + '.sub{text-align:center;color:#555;margin-bottom:20px;font-size:13px;}'
+                + '.ig{display:grid;grid-template-columns:1fr 1fr;gap:6px 30px;margin-bottom:14px;}'
+                + 'label{font-weight:bold;}'
+                + 'table{width:100%;border-collapse:collapse;margin-top:16px;}'
+                + 'th{background:#1f3a93;color:white;padding:8px;border:1px solid #ccc;}'
+                + 'td{border:1px solid #ccc;padding:6px;}'
+                + '.total{margin-top:16px;text-align:right;font-size:16px;font-weight:bold;color:#1f3a93;}'
+                + '.footer{margin-top:30px;display:flex;justify-content:space-between;}'
+                + '.sign{text-align:center;width:220px;}'
+                + '@media print{body{padding:10px;}}';
+
+            const info = '<div class="ig">'
+                + '<span><label>Mã phiếu nhập:' + closeTag + 'label> ' + escapePrintText(maPN) + closeTag + 'span>'
+                + '<span><label>Ngày nhập thuốc:' + closeTag + 'label> ' + escapePrintText(ngayNhap) + closeTag + 'span>'
+                + closeTag + 'div>';
+
+            const html = '<!DOCTYPE html>'
+                + '<html lang="vi"><head><meta charset="UTF-8">'
+                + '<title>Phieu Nhap Thuoc - ' + escapePrintText(maPN) + closeTag + 'title>'
+                + '<style>' + css + closeTag + 'style>'
+                + closeTag + 'head><body>'
+                + '<h2>PHÒNG KHÁM ĐA KHOA' + closeTag + 'h2>'
+                + '<div class="sub">PHIẾU NHẬP THUỐC' + closeTag + 'div><hr>'
+                + info
+                + '<table><thead><tr>'
+                + '<th width="5%">STT' + closeTag + 'th>'
+                + '<th width="12%">Mã Thuốc' + closeTag + 'th>'
+                + '<th width="33%">Tên Thuốc' + closeTag + 'th>'
+                + '<th width="18%">Đơn Giá Nhập (VND)' + closeTag + 'th>'
+                + '<th width="12%">Số Lượng' + closeTag + 'th>'
+                + '<th width="20%">Thành Tiền (VND)' + closeTag + 'th>'
+                + closeTag + 'tr>' + closeTag + 'thead>'
+                + '<tbody>' + (details.length ? rows : noRows) + closeTag + 'tbody>'
+                + closeTag + 'table>'
+                + '<div class="total">TỔNG TIỀN NHẬP: ' + escapePrintText(tongTien) + closeTag + 'div>'
+                + '<div class="footer">'
+                + '<div class="sign"><div>Ngày in: ' + today + closeTag + 'div>' + closeTag + 'div>'
+                + '<div class="sign"><div>Người Lập Phiếu' + closeTag + 'div><br><br><br><div>_________________' + closeTag + 'div>' + closeTag + 'div>'
+                + closeTag + 'div>'
+                + closeTag + 'body>' + closeTag + 'html>';
+
+            openPrintWindow(html);
+        }
+
+        async function filterStatsByMonth() {
+            const month = document.getElementById('statsMonth').value;
+            const label = document.getElementById('statsMonthLabel');
+            const tbody = document.getElementById('medicineStatsTableBody');
+
+            if (!month) {
+                if (label) label.textContent = '............';
+                if (medicineChartInstance) {
+                    medicineChartInstance.data.labels = [];
+                    medicineChartInstance.data.datasets[0].data = [];
+                    medicineChartInstance.update();
+                }
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="no-results">Nhập tháng để xem thống kê...</td></tr>';
+                }
+                return;
+            }
+
+            const [year, monthNumber] = month.split('-');
+            const thang = parseInt(monthNumber, 10);
+            const nam = parseInt(year, 10);
+            if (label) label.textContent = `${thang}/${nam}`;
+
+            try {
+                const resp = await fetch(`${API_BASE_URL}/baocao/su-dung-thuoc?thang=${thang}&nam=${nam}`, {
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }
+                });
+                if (!resp.ok) {
+                    const err = await resp.json().catch(() => ({}));
+                    showAlert(err?.message || `Không thể lấy thống kê thuốc (${resp.status})`, 'error');
+                    return;
+                }
+
+                const payload = await resp.json();
+                const stats = Array.isArray(payload?.data) ? payload.data : [];
+
+                const labels = stats.map(r => r.TenThuoc || '');
+                const values = stats.map(r => Number(r.SoLuongDung) || 0);
+                if (!medicineChartInstance) initMedicineStatsChart();
+                if (medicineChartInstance) {
+                    medicineChartInstance.data.labels = labels;
+                    medicineChartInstance.data.datasets[0].data = values;
+                    medicineChartInstance.update();
+                }
+
+                if (!tbody) return;
+                if (stats.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="no-results">Không có dữ liệu cho tháng này</td></tr>';
+                } else {
+                    tbody.innerHTML = stats.map((r, idx) => `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td>${r.MaThuoc || ''}</td>
+                            <td>${r.TenThuoc || ''}</td>
+                            <td>${r.TenDVT || ''}</td>
+                            <td>${Number(r.SoLuongDung) || 0}</td>
+                            <td>${Number(r.SoLanDung) || 0}</td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (e) {
+                console.error('Fetch thống kê thuốc lỗi', e);
+                showAlert('Lỗi khi lấy dữ liệu thống kê thuốc', 'error');
+            }
+        }
+
+        function viewRecordDetail(recordId) {
+            showAlert(`Xem chi tiết phiếu khám: ${recordId}`, 'success');
+        }
+
+        async function updateRegulations() {
+            const inputs = getRegulationInputs();
+            const errorBox = document.getElementById('regulations-error');
+            let hasError = false;
+
+            inputs.forEach(input => {
+                const value = Number(input.value);
+                const isValid = Number.isFinite(value) && value > 0;
+                input.classList.toggle('input-error', !isValid);
+                if (!isValid) hasError = true;
+            });
+
+            if (hasError) {
+                if (errorBox) errorBox.style.display = 'block';
+                return;
+            }
+
+            if (errorBox) errorBox.style.display = 'none';
+
+            const values = {
+                SoBenhNhanToiDa: Number(document.getElementById('reg-max-patients').value),
+                ThoiGianLuuLichSuKham: Number(document.getElementById('reg-history-years').value),
+                TienKham: Number(document.getElementById('reg-exam-fee').value),
+                TyLeTinhDonGiaBan: (() => {
+                    const raw = Number(document.getElementById('reg-medicine-markup').value);
+                    return raw > 10 ? raw / 100 : raw;
+                })()
+            };
+
+            try {
+                await Promise.all(Object.entries(values).map(async ([name, value]) => {
+                    const response = await fetch(`${API_BASE_URL}/tham-so/${name}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                        body: JSON.stringify({ GiaTri: value })
+                    });
+                    if (!response.ok) {
+                        const err = await response.json().catch(() => ({}));
+                        throw new Error(err.message || `Lỗi khi cập nhật ${name}`);
+                    }
+                }));
+                showAlert('Cập nhật quy định thành công!', 'success');
+            } catch (error) {
+                console.error('Lỗi khi cập nhật quy định:', error);
+                showAlert('Không thể cập nhật quy định. Vui lòng thử lại.', 'error');
+            }
+        }
+
+        function resetRegulations() {
+            setRegulationValues(regulationDefaults);
+            const errorBox = document.getElementById('regulations-error');
+            if (errorBox) errorBox.style.display = 'none';
+        }
+
+        function setRegulationValues(values) {
+            const mapping = {
+                maxPatientsPerDay: 'reg-max-patients',
+                historyRetentionYears: 'reg-history-years',
+                examFee: 'reg-exam-fee',
+                medicineMarkupPercent: 'reg-medicine-markup'
+            };
+
+            Object.keys(mapping).forEach(key => {
+                const input = document.getElementById(mapping[key]);
+                if (input) {
+                    input.value = values[key];
+                    input.classList.remove('input-error');
+                }
+            });
+        }
+
+        function getRegulationInputs() {
+            return [
+                document.getElementById('reg-max-patients'),
+                document.getElementById('reg-history-years'),
+                document.getElementById('reg-exam-fee'),
+                document.getElementById('reg-medicine-markup')
+            ].filter(Boolean);
+        }
+
+        function handleLogout() {
+            if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+                window.location.href = 'module/pages/HomePage.html';
+            }
+        }
+
+        let revenueChartInstance = null;
+        function initRevenueChart() {
+            const chartCanvas = document.getElementById('revenueChart');
+            if (!chartCanvas) return;
+
+            revenueChartInstance = new Chart(chartCanvas, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Doanh Thu (VNĐ)',
+                        data: [],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true }
+                    }
+                }
+            });
+        }
+
+        let medicineChartInstance = null;
+        function initMedicineStatsChart() {
+            const chartCanvas = document.getElementById('medicineStatsChart');
+            if (!chartCanvas) return;
+
+            medicineChartInstance = new Chart(chartCanvas, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Số Lượng Sử Dụng',
+                        data: [],
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: true }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

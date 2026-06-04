@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mắt | Phòng Khám Triệu Dân</title>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../../core/styles/variables.css">
+  <link rel="stylesheet" href="../../../core/styles/global.css">
+  <link rel="stylesheet" href="../../styles/service-detail.css">
+</head>
+<body>
+  <section class="service-hero" style="--hero-image: url('https://images.unsplash.com/photo-1511174511562-5f7f18b874f8?q=80&w=1600&auto=format&fit=crop');">
+    <div class="hero-inner">
+      <a class="back-link" href="../HomePage.html#services">← Về trang chủ</a>
+      <span class="hero-tag">Chuyên khoa</span>
+      <h1>Mắt</h1>
+      <p>Chăm sóc thị lực toàn diện với trang thiết bị hiện đại và đội ngũ bác sĩ chuyên khoa giàu kinh nghiệm.</p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="../HomePage.html#appointment">Đặt lịch khám ngay</a>
+        <a class="btn-ghost" href="../HomePage.html#services">Xem các dịch vụ khác</a>
+      </div>
+    </div>
+  </section>
+
+  <main class="service-detail">
+    <section class="service-section reveal">
+      <div class="section-inner">
+        <div class="section-header">
+          <h2>Giới thiệu dịch vụ</h2>
+          <p>Chuyên khoa Mắt cung cấp dịch vụ kiểm tra thị lực và tư vấn điều trị, phẫu thuật khúc xạ an toàn.</p>
+        </div>
+        <div class="intro-grid">
+          <div class="intro-card">
+            <h3>Chuyên môn nổi bật</h3>
+            <p>Khám tổng quát mắt, đánh giá tật khúc xạ và theo dõi bệnh lý mắt mạn tính.</p>
+          </div>
+          <div class="intro-card">
+            <h3>Giải pháp điều trị</h3>
+            <p>Tư vấn phương pháp điều chỉnh thị lực phù hợp, tối ưu an toàn và kết quả.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="service-section reveal">
+      <div class="section-inner">
+        <div class="section-header">
+          <h2>Danh sách dịch vụ nổi bật</h2>
+          <p>Giải pháp chăm sóc mắt chuyên sâu, đồng hành cùng bạn trong mọi giai đoạn.</p>
+        </div>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="feature-icon">👁️</div>
+            <h4>Khám thị lực</h4>
+            <p>Kiểm tra thị lực và phát hiện sớm các vấn đề về mắt.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📏</div>
+            <h4>Đo mắt cận</h4>
+            <p>Đánh giá độ cận, loạn, viễn để tư vấn kính phù hợp.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔬</div>
+            <h4>Tư vấn LASIK</h4>
+            <p>Đánh giá điều kiện phẫu thuật và tư vấn quy trình an toàn.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">💡</div>
+            <h4>Chăm sóc mắt định kỳ</h4>
+            <p>Theo dõi sức khỏe thị lực và tư vấn phòng ngừa.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-strip reveal">
+      <div>
+        <h3>Thị lực khỏe cho cuộc sống năng động</h3>
+        <p>Đặt lịch khám để được kiểm tra mắt toàn diện và tư vấn chuyên sâu.</p>
+      </div>
+      <a class="btn-primary" href="../HomePage.html#appointment">Đặt lịch khám ngay</a>
+    </section>
+  </main>
+
+  <script>
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.2 });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

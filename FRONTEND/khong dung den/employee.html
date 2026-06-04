@@ -1,0 +1,1465 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Staff Dashboard - Phòng Khám Triệu Dân</title>
+
+  <!-- FONT -->
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+  
+  <!-- ICONS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    /* ========================================
+       VARIABLES - GLOBAL DESIGN SYSTEM
+    ======================================== */
+    :root {
+      --teal:       #0a7c6e;
+      --teal-light: #0fa390;
+      --teal-pale:  #e6f5f3;
+      --teal-mid:   #c1ebe5;
+      --gold:       #d4a843;
+      --gold-light: #f0c96a;
+      --white:      #ffffff;
+      --off-white:  #9df7d9;
+      --text-dark:  #114242;
+      --text-mid:   #3d5a57;   
+      --text-light: #7a9e9a;
+      --border:     #d0e9e6;
+      --shadow:     0 4px 24px rgba(10,124,110,0.10);
+      --shadow-lg:  0 12px 48px rgba(10,124,110,0.16);
+      --font-main:  'Be Vietnam Pro', sans-serif;
+      --font-display: 'Playfair Display', serif;
+    }
+
+    /* RESET */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-main);
+      color: var(--text-dark);
+      background: #f8faf9;
+      overflow-x: hidden;
+    }
+
+    /* ========================================
+       LAYOUT - DASHBOARD
+    ======================================== */
+    .dashboard {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ─── SIDEBAR ─── */
+    .sidebar {
+      width: 280px;
+      background: var(--white);
+      box-shadow: 2px 0 12px rgba(10,124,110,0.08);
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      z-index: 1000;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-light) 100%);
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--white);
+      margin-bottom: 16px;
+    }
+
+    .sidebar-logo-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .sidebar-logo-text {
+      line-height: 1.2;
+    }
+
+    .sidebar-logo-text strong {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .sidebar-logo-text span {
+      font-size: 0.65rem;
+      font-weight: 500;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .user-info {
+      background: var(--teal-pale);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+
+    .user-avatar {
+      width: 44px;
+      height: 44px;
+      background: var(--teal);
+      color: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      margin-bottom: 8px;
+    }
+
+    .user-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+    }
+
+    .user-role {
+      font-size: 0.78rem;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .sidebar-nav {
+      padding: 24px;
+    }
+
+    .nav-section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-light);
+      margin-bottom: 12px;
+      padding: 0 12px;
+    }
+
+    .nav-menu {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+
+    .nav-menu-item {
+      position: relative;
+    }
+
+    .nav-menu-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: var(--text-mid);
+      text-decoration: none;
+      border-radius: 10px;
+      transition: all 0.2s;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    .nav-menu-link:hover {
+      background: var(--teal-pale);
+      color: var(--teal);
+      transform: translateX(4px);
+    }
+
+    .nav-menu-link.active {
+      background: var(--teal);
+      color: var(--white);
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(10,124,110,0.25);
+    }
+
+    .nav-menu-link i {
+      width: 20px;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    /* ─── MAIN CONTENT ─── */
+    .main-content {
+      margin-left: 280px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ─── HEADER ─── */
+    .header {
+      background: var(--white);
+      box-shadow: 0 2px 12px rgba(10,124,110,0.08);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .page-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin: 0;
+    }
+
+    .global-search {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      max-width: 400px;
+      background: var(--teal-pale);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      transition: all 0.2s;
+    }
+
+    .global-search:focus-within {
+      box-shadow: 0 0 0 3px rgba(10,124,110,0.1);
+      border-color: var(--teal);
+    }
+
+    .global-search input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-family: var(--font-main);
+      font-size: 0.95rem;
+      color: var(--text-dark);
+    }
+
+    .global-search input::placeholder {
+      color: var(--text-light);
+    }
+
+    .global-search i {
+      color: var(--text-light);
+      margin-right: 8px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-logout {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--teal);
+      color: var(--white);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      font-family: var(--font-main);
+      font-size: 0.95rem;
+    }
+
+    .btn-logout:hover {
+      background: var(--teal-light);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(10,124,110,0.25);
+    }
+
+    /* ─── CONTENT AREA ─── */
+    .content {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+    }
+
+    /* ─── TABS ─── */
+    .tabs-container {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 32px;
+      border-bottom: 2px solid var(--border);
+      overflow-x: auto;
+      padding-bottom: 0;
+    }
+
+    .tab-button {
+      background: none;
+      border: none;
+      padding: 16px 0;
+      margin-bottom: -2px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-light);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-main);
+      border-bottom: 2px solid transparent;
+      position: relative;
+      white-space: nowrap;
+    }
+
+    .tab-button:hover {
+      color: var(--teal);
+    }
+
+    .tab-button.active {
+      color: var(--teal);
+      border-bottom-color: var(--teal);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeInUp 0.3s ease;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── SEARCH BAR ─── */
+    .search-bar {
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .search-input-wrapper {
+      flex: 1;
+      max-width: 400px;
+      display: flex;
+      align-items: center;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      transition: all 0.2s;
+    }
+
+    .search-input-wrapper:focus-within {
+      box-shadow: 0 0 0 3px rgba(10,124,110,0.1);
+      border-color: var(--teal);
+    }
+
+    .search-input-wrapper input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-family: var(--font-main);
+      font-size: 0.95rem;
+      color: var(--text-dark);
+    }
+
+    .search-input-wrapper input::placeholder {
+      color: var(--text-light);
+    }
+
+    /* ─── TABLE ─── */
+    .table-wrapper {
+      background: var(--white);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    .table thead {
+      background: linear-gradient(90deg, var(--teal-pale) 0%, var(--teal-pale) 100%);
+      border-bottom: 2px solid var(--border);
+    }
+
+    .table th {
+      padding: 16px;
+      text-align: left;
+      font-weight: 700;
+      color: var(--text-dark);
+      white-space: nowrap;
+    }
+
+    .table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+
+    .table tbody tr:hover {
+      background: var(--teal-pale);
+      transform: scale(1.001);
+      box-shadow: inset 0 0 8px rgba(10,124,110,0.05);
+    }
+
+    .table td {
+      padding: 16px;
+      color: var(--text-mid);
+    }
+
+    .table tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    /* ─── TABLE ACTIONS ─── */
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-action {
+      background: transparent;
+      border: 1px solid var(--teal);
+      color: var(--teal);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      font-family: var(--font-main);
+    }
+
+    .btn-action:hover {
+      background: var(--teal);
+      color: var(--white);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(10,124,110,0.25);
+    }
+
+    /* ─── PAGINATION ─── */
+    .pagination-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      border-radius: 0 0 12px 12px;
+    }
+
+    .pagination-info {
+      font-size: 0.9rem;
+      color: var(--text-light);
+    }
+
+    .pagination {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .pagination-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--text-mid);
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      font-family: var(--font-main);
+    }
+
+    .pagination-btn:hover:not(.pagination-btn.disabled) {
+      border-color: var(--teal);
+      color: var(--teal);
+      background: var(--teal-pale);
+    }
+
+    .pagination-btn.active {
+      background: var(--teal);
+      color: var(--white);
+      border-color: var(--teal);
+    }
+
+    .pagination-btn.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ─── EMPTY STATE ─── */
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      color: var(--text-light);
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-state-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+    }
+
+    .empty-state-text {
+      color: var(--text-light);
+      font-size: 0.95rem;
+    }
+
+    /* ========================================
+       RESPONSIVE
+    ======================================== */
+
+    @media (max-width: 1024px) {
+      .sidebar {
+        width: 240px;
+      }
+
+      .main-content {
+        margin-left: 240px;
+      }
+
+      .header {
+        padding: 16px 24px;
+        flex-wrap: wrap;
+      }
+
+      .page-title {
+        font-size: 1.25rem;
+      }
+
+      .global-search {
+        max-width: 300px;
+      }
+
+      .content {
+        padding: 24px;
+      }
+
+      .table {
+        font-size: 0.85rem;
+      }
+
+      .table th, .table td {
+        padding: 12px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        width: 220px;
+      }
+
+      .sidebar.active {
+        transform: translateX(0);
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .header-left {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .global-search {
+        max-width: 100%;
+      }
+
+      .header-actions {
+        width: 100%;
+      }
+
+      .page-title {
+        font-size: 1.15rem;
+      }
+
+      .content {
+        padding: 16px;
+      }
+
+      .table {
+        font-size: 0.8rem;
+      }
+
+      .table th, .table td {
+        padding: 10px;
+      }
+
+      .tabs-container {
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .tab-button {
+        padding: 12px 0;
+        font-size: 0.85rem;
+      }
+
+      .search-bar {
+        flex-direction: column;
+      }
+
+      .search-input-wrapper {
+        max-width: 100%;
+      }
+
+      .pagination-container {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn-action {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .sidebar {
+        width: 200px;
+      }
+
+      .page-title {
+        font-size: 1rem;
+      }
+
+      .nav-menu-link {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+      }
+
+      .table {
+        font-size: 0.75rem;
+      }
+
+      .table th, .table td {
+        padding: 8px;
+      }
+
+      .btn-action {
+        padding: 4px 8px;
+        font-size: 0.75rem;
+      }
+    }
+
+    /* ─── MOBILE MENU TOGGLE ─── */
+    .mobile-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--text-dark);
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-toggle {
+        display: flex;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="dashboard">
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <a href="#" class="sidebar-logo">
+          <div class="sidebar-logo-icon">🏥</div>
+          <div class="sidebar-logo-text">
+            <strong>Triệu Dân</strong>
+            <span>Clinic</span>
+          </div>
+        </a>
+        <div class="user-info">
+          <div class="user-avatar">👨‍⚕️</div>
+          <div class="user-name">Dr. Nguyễn Văn A</div>
+          <div class="user-role">
+            <i class="fas fa-circle-check" style="font-size: 0.65rem;"></i>
+            Bác sĩ
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">📋 Quản Lý</div>
+        <ul class="nav-menu">
+          <li class="nav-menu-item">
+            <a href="#" class="nav-menu-link active" data-tab="patient-search">
+              <i class="fas fa-users"></i> Tìm Bệnh Nhân
+            </a>
+          </li>
+          <li class="nav-menu-item">
+            <a href="#" class="nav-menu-link" data-tab="medical-record">
+              <i class="fas fa-file-medical"></i> Hồ Sơ Y Tế
+            </a>
+          </li>
+          <li class="nav-menu-item">
+            <a href="#" class="nav-menu-link" data-tab="medicine-list">
+              <i class="fas fa-pills"></i> Danh Sách Thuốc
+            </a>
+          </li>
+          <li class="nav-menu-item">
+            <a href="#" class="nav-menu-link" data-tab="disease-list">
+              <i class="fas fa-disease"></i> Danh Sách Bệnh
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <div class="main-content">
+      <!-- ===== HEADER ===== -->
+      <header class="header">
+        <div class="header-left">
+          <button class="mobile-toggle" id="mobileToggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+          </button>
+          <h1 class="page-title" id="pageTitle">Tìm Bệnh Nhân</h1>
+          <div class="global-search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="Tìm kiếm toàn cục..." id="globalSearch">
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn-logout" onclick="handleLogout()">
+            <i class="fas fa-sign-out-alt"></i> Đăng Xuất
+          </button>
+        </div>
+      </header>
+
+      <!-- ===== CONTENT ===== -->
+      <div class="content">
+        <!-- ===== TABS ===== -->
+        <div class="tabs-container" id="tabsContainer">
+          <button class="tab-button active" onclick="switchTab(event, 'patient-search')">
+            <i class="fas fa-users"></i> Tìm Bệnh Nhân
+          </button>
+          <button class="tab-button" onclick="switchTab(event, 'medical-record')">
+            <i class="fas fa-file-medical"></i> Hồ Sơ Y Tế
+          </button>
+          <button class="tab-button" onclick="switchTab(event, 'medicine-list')">
+            <i class="fas fa-pills"></i> Danh Sách Thuốc
+          </button>
+          <button class="tab-button" onclick="switchTab(event, 'disease-list')">
+            <i class="fas fa-disease"></i> Danh Sách Bệnh
+          </button>
+        </div>
+
+        <!-- ===== TAB 1: PATIENT SEARCH ===== -->
+        <div id="patient-search" class="tab-content active">
+          <div class="search-bar">
+            <div class="search-input-wrapper">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Tìm theo tên hoặc ID..." id="patientSearchInput" onkeyup="filterPatientTable()">
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table" id="patientTable">
+              <thead>
+                <tr>
+                  <th style="width: 12%;">Mã Bệnh Nhân</th>
+                  <th style="width: 18%;">Họ và Tên</th>
+                  <th style="width: 12%;">Năm Sinh</th>
+                  <th style="width: 10%;">Giới Tính</th>
+                  <th style="width: 18%;">Ngày Nhập Viện</th>
+                  <th style="width: 30%;">Ghi Chú</th>
+                </tr>
+              </thead>
+              <tbody id="patientTableBody">
+                <tr>
+                  <td>BN001</td>
+                  <td>Nguyễn Thị Hoa</td>
+                  <td>1990</td>
+                  <td>Nữ</td>
+                  <td>15/03/2024</td>
+                  <td>Tăng huyết áp mạn tính</td>
+                </tr>
+                <tr>
+                  <td>BN002</td>
+                  <td>Trần Văn Bình</td>
+                  <td>1985</td>
+                  <td>Nam</td>
+                  <td>18/03/2024</td>
+                  <td>Đau lưng</td>
+                </tr>
+                <tr>
+                  <td>BN003</td>
+                  <td>Phạm Minh Chiến</td>
+                  <td>1995</td>
+                  <td>Nam</td>
+                  <td>20/03/2024</td>
+                  <td>Kiểm tra sức khỏe định kỳ</td>
+                </tr>
+                <tr>
+                  <td>BN004</td>
+                  <td>Lê Thị Mai Anh</td>
+                  <td>2000</td>
+                  <td>Nữ</td>
+                  <td>22/03/2024</td>
+                  <td>Cảm cúm</td>
+                </tr>
+                <tr>
+                  <td>BN005</td>
+                  <td>Đỗ Văn Dũng</td>
+                  <td>1988</td>
+                  <td>Nam</td>
+                  <td>24/03/2024</td>
+                  <td>Tiểu đường loại 2</td>
+                </tr>
+                <tr>
+                  <td>BN006</td>
+                  <td>Vũ Thị Hương</td>
+                  <td>1992</td>
+                  <td>Nữ</td>
+                  <td>25/03/2024</td>
+                  <td>Khám sau phẫu thuật</td>
+                </tr>
+                <tr>
+                  <td>BN007</td>
+                  <td>Hoàng Văn Khánh</td>
+                  <td>1987</td>
+                  <td>Nam</td>
+                  <td>26/03/2024</td>
+                  <td>Đau đầu mãn tính</td>
+                </tr>
+                <tr>
+                  <td>BN008</td>
+                  <td>Trương Thị Loan</td>
+                  <td>1998</td>
+                  <td>Nữ</td>
+                  <td>27/03/2024</td>
+                  <td>Dị ứng da</td>
+                </tr>
+                <tr>
+                  <td>BN009</td>
+                  <td>Ngô Văn Long</td>
+                  <td>1980</td>
+                  <td>Nam</td>
+                  <td>28/03/2024</td>
+                  <td>Suy tim</td>
+                </tr>
+                <tr>
+                  <td>BN010</td>
+                  <td>Bùi Thị Xuân</td>
+                  <td>1994</td>
+                  <td>Nữ</td>
+                  <td>29/03/2024</td>
+                  <td>Viêm phế quản cấp</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="pagination-container">
+              <div class="pagination-info">
+                Hiển thị <strong id="patientShowStart">1</strong> - <strong id="patientShowEnd">10</strong> của <strong id="patientTotal">10</strong> bệnh nhân
+              </div>
+              <div class="pagination">
+                <button class="pagination-btn" onclick="previousPage('patient')" id="patientPrevBtn">← Trước</button>
+                <button class="pagination-btn active" onclick="goToPage(event, 'patient', 1)">1</button>
+                <button class="pagination-btn" onclick="goToPage(event, 'patient', 2)">2</button>
+                <button class="pagination-btn" onclick="nextPage('patient')" id="patientNextBtn">Sau →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== TAB 2: MEDICAL RECORD SEARCH ===== -->
+        <div id="medical-record" class="tab-content">
+          <div class="search-bar">
+            <div class="search-input-wrapper">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Tìm theo Mã Hồ Sơ hoặc Tên..." id="recordSearchInput" onkeyup="filterRecordTable()">
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table" id="recordTable">
+              <thead>
+                <tr>
+                  <th style="width: 8%;">STT</th>
+                  <th style="width: 15%;">Mã Hồ Sơ</th>
+                  <th style="width: 18%;">Họ và Tên</th>
+                  <th style="width: 10%;">Giới Tính</th>
+                  <th style="width: 12%;">Năm Sinh</th>
+                  <th style="width: 15%;">Ngày Nhập Viện</th>
+                  <th style="width: 22%;">Hành Động</th>
+                </tr>
+              </thead>
+              <tbody id="recordTableBody">
+                <tr>
+                  <td>1</td>
+                  <td>HS001</td>
+                  <td>Nguyễn Thị Hoa</td>
+                  <td>Nữ</td>
+                  <td>1990</td>
+                  <td>15/03/2024</td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn-action" onclick="viewPrescription('HS001')">Xem đơn thuốc</button>
+                      <button class="btn-action" onclick="prescribeMedicine('HS001')">Kê đơn thuốc</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>HS002</td>
+                  <td>Trần Văn Bình</td>
+                  <td>Nam</td>
+                  <td>1985</td>
+                  <td>18/03/2024</td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn-action" onclick="viewPrescription('HS002')">Xem đơn thuốc</button>
+                      <button class="btn-action" onclick="prescribeMedicine('HS002')">Kê đơn thuốc</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>HS003</td>
+                  <td>Phạm Minh Chiến</td>
+                  <td>Nam</td>
+                  <td>1995</td>
+                  <td>20/03/2024</td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn-action" onclick="viewPrescription('HS003')">Xem đơn thuốc</button>
+                      <button class="btn-action" onclick="prescribeMedicine('HS003')">Kê đơn thuốc</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td>HS004</td>
+                  <td>Lê Thị Mai Anh</td>
+                  <td>Nữ</td>
+                  <td>2000</td>
+                  <td>22/03/2024</td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn-action" onclick="viewPrescription('HS004')">Xem đơn thuốc</button>
+                      <button class="btn-action" onclick="prescribeMedicine('HS004')">Kê đơn thuốc</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>5</td>
+                  <td>HS005</td>
+                  <td>Đỗ Văn Dũng</td>
+                  <td>Nam</td>
+                  <td>1988</td>
+                  <td>24/03/2024</td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn-action" onclick="viewPrescription('HS005')">Xem đơn thuốc</button>
+                      <button class="btn-action" onclick="prescribeMedicine('HS005')">Kê đơn thuốc</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>6</td>
+                  <td>HS006</td>
+                  <td>Vũ Thị Hương</td>
+                  <td>Nữ</td>
+                  <td>1992</td>
+                  <td>25/03/2024</td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn-action" onclick="viewPrescription('HS006')">Xem đơn thuốc</button>
+                      <button class="btn-action" onclick="prescribeMedicine('HS006')">Kê đơn thuốc</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="pagination-container">
+              <div class="pagination-info">
+                Hiển thị <strong id="recordShowStart">1</strong> - <strong id="recordShowEnd">6</strong> của <strong id="recordTotal">6</strong> hồ sơ
+              </div>
+              <div class="pagination">
+                <button class="pagination-btn disabled" onclick="previousPage('record')" id="recordPrevBtn">← Trước</button>
+                <button class="pagination-btn active" onclick="goToPage(event, 'record', 1)">1</button>
+                <button class="pagination-btn disabled" onclick="nextPage('record')" id="recordNextBtn">Sau →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== TAB 3: MEDICINE LIST ===== -->
+        <div id="medicine-list" class="tab-content">
+          <div class="search-bar">
+            <div class="search-input-wrapper">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Tìm theo tên thuốc..." id="medicineSearchInput" onkeyup="filterMedicineTable()">
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table" id="medicineTable">
+              <thead>
+                <tr>
+                  <th style="width: 20%;">Tên Thuốc</th>
+                  <th style="width: 12%;">Đơn Vị</th>
+                  <th style="width: 12%;">Số Lượng</th>
+                  <th style="width: 12%;">Giá (₫)</th>
+                  <th style="width: 44%;">Hướng Dẫn Sử Dụng</th>
+                </tr>
+              </thead>
+              <tbody id="medicineTableBody">
+                <tr>
+                  <td>Paracetamol 500mg</td>
+                  <td>Viên</td>
+                  <td>500</td>
+                  <td>2.500</td>
+                  <td>Uống 1-2 viên, 3-4 lần/ngày sau ăn</td>
+                </tr>
+                <tr>
+                  <td>Ibuprofen 400mg</td>
+                  <td>Viên</td>
+                  <td>300</td>
+                  <td>3.500</td>
+                  <td>Uống 1 viên, 2-3 lần/ngày sau ăn</td>
+                </tr>
+                <tr>
+                  <td>Amoxicillin 500mg</td>
+                  <td>Viên</td>
+                  <td>200</td>
+                  <td>15.000</td>
+                  <td>Uống 1 viên, 3 lần/ngày, khoảng cách 8 giờ</td>
+                </tr>
+                <tr>
+                  <td>Omeprazole 20mg</td>
+                  <td>Viên</td>
+                  <td>150</td>
+                  <td>12.000</td>
+                  <td>Uống 1 viên, 1 lần/ngày trước ăn sáng</td>
+                </tr>
+                <tr>
+                  <td>Metformin 500mg</td>
+                  <td>Viên</td>
+                  <td>400</td>
+                  <td>5.000</td>
+                  <td>Uống 1-2 viên, 2-3 lần/ngày với bữa ăn</td>
+                </tr>
+                <tr>
+                  <td>Atorvastatin 20mg</td>
+                  <td>Viên</td>
+                  <td>180</td>
+                  <td>25.000</td>
+                  <td>Uống 1 viên, 1 lần/ngày vào buổi tối</td>
+                </tr>
+                <tr>
+                  <td>Losartan 50mg</td>
+                  <td>Viên</td>
+                  <td>250</td>
+                  <td>18.000</td>
+                  <td>Uống 1 viên, 1 lần/ngày, bất kỳ lúc nào</td>
+                </tr>
+                <tr>
+                  <td>Cetirizine 10mg</td>
+                  <td>Viên</td>
+                  <td>100</td>
+                  <td>8.000</td>
+                  <td>Uống 1 viên, 1-2 lần/ngày</td>
+                </tr>
+                <tr>
+                  <td>Vitamin C 500mg</td>
+                  <td>Viên</td>
+                  <td>600</td>
+                  <td>4.000</td>
+                  <td>Uống 1-2 viên, 1-2 lần/ngày</td>
+                </tr>
+                <tr>
+                  <td>Cough Syrup</td>
+                  <td>Chai</td>
+                  <td>50</td>
+                  <td>35.000</td>
+                  <td>Uống 5ml, 3 lần/ngày, ngày 3 lần</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="pagination-container">
+              <div class="pagination-info">
+                Hiển thị <strong id="medicineShowStart">1</strong> - <strong id="medicineShowEnd">10</strong> của <strong id="medicineTotal">10</strong> loại thuốc
+              </div>
+              <div class="pagination">
+                <button class="pagination-btn disabled" onclick="previousPage('medicine')" id="medicinePrevBtn">← Trước</button>
+                <button class="pagination-btn active" onclick="goToPage(event, 'medicine', 1)">1</button>
+                <button class="pagination-btn disabled" onclick="nextPage('medicine')" id="medicineNextBtn">Sau →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== TAB 4: DISEASE LIST ===== -->
+        <div id="disease-list" class="tab-content">
+          <div class="search-bar">
+            <div class="search-input-wrapper">
+              <i class="fas fa-search"></i>
+              <input type="text" placeholder="Tìm theo tên bệnh..." id="diseaseSearchInput" onkeyup="filterDiseaseTable()">
+            </div>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="table" id="diseaseTable">
+              <thead>
+                <tr>
+                  <th style="width: 8%;">STT</th>
+                  <th style="width: 20%;">Loại Bệnh</th>
+                  <th style="width: 72%;">Miêu Tả</th>
+                </tr>
+              </thead>
+              <tbody id="diseaseTableBody">
+                <tr>
+                  <td>1</td>
+                  <td>Tăng Huyết Áp</td>
+                  <td>Tình trạng áp suất máu cao kéo dài, có thể dẫn đến biến chứng tim mạch và thận</td>
+                </tr>
+                <tr>
+                  <td>2</td>
+                  <td>Tiểu Đường Loại 2</td>
+                  <td>Bệnh chuyển hóa gây khó khăn trong điều hòa đường huyết, liên quan đến lối sống</td>
+                </tr>
+                <tr>
+                  <td>3</td>
+                  <td>Cao Huyết Áp Kèm Béo Phì</td>
+                  <td>Kết hợp tăng huyết áp với chỉ số khối cơ thể cao, rủi ro cao về bệnh tim</td>
+                </tr>
+                <tr>
+                  <td>4</td>
+                  <td>Viêm Phế Quản Cấp</td>
+                  <td>Viêm đường hô hấp dưới gây ho, khó thở, thường do nhiễm virus hoặc vi khuẩn</td>
+                </tr>
+                <tr>
+                  <td>5</td>
+                  <td>Suy Tim</td>
+                  <td>Tình trạng tim không bơm máu hiệu quả, gây suy giảm chức năng các cơ quan</td>
+                </tr>
+                <tr>
+                  <td>6</td>
+                  <td>Dị Ứng Da</td>
+                  <td>Phản ứng miễn dịch địa phương trên da, gây ngứa, nổi mẩn, đỏ</td>
+                </tr>
+                <tr>
+                  <td>7</td>
+                  <td>Đau Lưng Mãn Tính</td>
+                  <td>Đau tại vùng lưng kéo dài trên 12 tuần, ảnh hưởng đến chất lượng sống</td>
+                </tr>
+                <tr>
+                  <td>8</td>
+                  <td>Cảm Cúm</td>
+                  <td>Bệnh do virus, gây sốt, ho, hắt hơi, thường tự khỏi trong 1-2 tuần</td>
+                </tr>
+                <tr>
+                  <td>9</td>
+                  <td>Cao Huyết Mỡ</td>
+                  <td>Nồng độ lipid máu cao, là yếu tố nguy hiểm đối với tim mạch</td>
+                </tr>
+                <tr>
+                  <td>10</td>
+                  <td>Bệnh Thận Mạn Tính</td>
+                  <td>Suy giảm dần chức năng thận, cần theo dõi và điều trị lâu dài</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="pagination-container">
+              <div class="pagination-info">
+                Hiển thị <strong id="diseaseShowStart">1</strong> - <strong id="diseaseShowEnd">10</strong> của <strong id="diseaseTotal">10</strong> loại bệnh
+              </div>
+              <div class="pagination">
+                <button class="pagination-btn disabled" onclick="previousPage('disease')" id="diseasePrevBtn">← Trước</button>
+                <button class="pagination-btn active" onclick="goToPage(event, 'disease', 1)">1</button>
+                <button class="pagination-btn disabled" onclick="nextPage('disease')" id="diseaseNextBtn">Sau →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== TAB SWITCHING =====
+    function switchTab(e, tabId) {
+      e.preventDefault();
+
+      // Remove active class from all tabs and buttons
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+
+      // Add active class to clicked button and corresponding tab
+      e.target.closest('.tab-button').classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+
+      // Update page title
+      const titleMap = {
+        'patient-search': 'Tìm Bệnh Nhân',
+        'medical-record': 'Hồ Sơ Y Tế',
+        'medicine-list': 'Danh Sách Thuốc',
+        'disease-list': 'Danh Sách Bệnh'
+      };
+      document.getElementById('pageTitle').textContent = titleMap[tabId] || 'Dashboard';
+
+      // Close mobile sidebar
+      if (window.innerWidth <= 768) {
+        document.getElementById('sidebar').classList.remove('active');
+      }
+    }
+
+    // ===== SIDEBAR NAVIGATION =====
+    document.querySelectorAll('[data-tab]').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        const tabId = this.getAttribute('data-tab');
+        const tabButton = document.querySelector(`[onclick*="'${tabId}'"]`);
+        if (tabButton) {
+          tabButton.click();
+        }
+
+        // Update active nav link
+        document.querySelectorAll('.nav-menu-link').forEach(link => link.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // ===== SEARCH & FILTER =====
+    function filterPatientTable() {
+      const searchTerm = document.getElementById('patientSearchInput').value.toLowerCase();
+      const table = document.getElementById('patientTable');
+      const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+      let visibleCount = 0;
+
+      Array.from(rows).forEach(row => {
+        const cells = row.getElementsByTagName('td');
+        const id = cells[0].textContent.toLowerCase();
+        const name = cells[1].textContent.toLowerCase();
+
+        if (id.includes(searchTerm) || name.includes(searchTerm)) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      updatePaginationInfo('patient', visibleCount);
+    }
+
+    function filterRecordTable() {
+      const searchTerm = document.getElementById('recordSearchInput').value.toLowerCase();
+      const table = document.getElementById('recordTable');
+      const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+      let visibleCount = 0;
+
+      Array.from(rows).forEach(row => {
+        const cells = row.getElementsByTagName('td');
+        const recordId = cells[1].textContent.toLowerCase();
+        const name = cells[2].textContent.toLowerCase();
+
+        if (recordId.includes(searchTerm) || name.includes(searchTerm)) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      updatePaginationInfo('record', visibleCount);
+    }
+
+    function filterMedicineTable() {
+      const searchTerm = document.getElementById('medicineSearchInput').value.toLowerCase();
+      const table = document.getElementById('medicineTable');
+      const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+      let visibleCount = 0;
+
+      Array.from(rows).forEach(row => {
+        const cells = row.getElementsByTagName('td');
+        const medicineName = cells[0].textContent.toLowerCase();
+
+        if (medicineName.includes(searchTerm)) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      updatePaginationInfo('medicine', visibleCount);
+    }
+
+    function filterDiseaseTable() {
+      const searchTerm = document.getElementById('diseaseSearchInput').value.toLowerCase();
+      const table = document.getElementById('diseaseTable');
+      const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+      let visibleCount = 0;
+
+      Array.from(rows).forEach(row => {
+        const cells = row.getElementsByTagName('td');
+        const diseaseName = cells[1].textContent.toLowerCase();
+
+        if (diseaseName.includes(searchTerm)) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      updatePaginationInfo('disease', visibleCount);
+    }
+
+    // ===== PAGINATION =====
+    function updatePaginationInfo(tablePrefix, totalRows) {
+      const rowsPerPage = 10;
+      const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+      document.getElementById(tablePrefix + 'ShowStart').textContent = totalRows > 0 ? 1 : 0;
+      document.getElementById(tablePrefix + 'ShowEnd').textContent = Math.min(rowsPerPage, totalRows);
+      document.getElementById(tablePrefix + 'Total').textContent = totalRows;
+    }
+
+    function previousPage(tablePrefix) {
+      // Placeholder for previous page logic
+      alert(`Chuyển đến trang trước cho ${tablePrefix}`);
+    }
+
+    function nextPage(tablePrefix) {
+      // Placeholder for next page logic
+      alert(`Chuyển đến trang sau cho ${tablePrefix}`);
+    }
+
+    function goToPage(e, tablePrefix, pageNum) {
+      e.preventDefault();
+      // Placeholder for go to page logic
+      alert(`Chuyển đến trang ${pageNum} cho ${tablePrefix}`);
+    }
+
+    // ===== ACTION BUTTONS =====
+    function viewPrescription(recordId) {
+      alert(`Xem đơn thuốc cho hồ sơ: ${recordId}`);
+      // TODO: Implement prescription viewing modal
+    }
+
+    function prescribeMedicine(recordId) {
+      alert(`Kê đơn thuốc cho hồ sơ: ${recordId}`);
+      // TODO: Implement prescription creation modal
+    }
+
+    // ===== HEADER ACTIONS =====
+    function handleLogout() {
+      if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+        // TODO: Implement logout logic
+        alert('Đã đăng xuất thành công!');
+        // Redirect to login page
+        window.location.href = 'HomePage.html';
+      }
+    }
+
+    // ===== GLOBAL SEARCH =====
+    document.getElementById('globalSearch').addEventListener('keyup', function(e) {
+      if (e.key === 'Enter') {
+        alert('Tìm kiếm: ' + this.value);
+        // TODO: Implement global search logic
+      }
+    });
+
+    // ===== MOBILE MENU =====
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('active');
+    }
+
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(e) {
+      if (window.innerWidth <= 768) {
+        const sidebar = document.getElementById('sidebar');
+        const mobileToggle = document.getElementById('mobileToggle');
+        if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
+          sidebar.classList.remove('active');
+        }
+      }
+    });
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set initial counts
+      updatePaginationInfo('patient', 10);
+      updatePaginationInfo('record', 6);
+      updatePaginationInfo('medicine', 10);
+      updatePaginationInfo('disease', 10);
+    });
+  </script>
+
+</body>
+</html>

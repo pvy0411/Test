@@ -1,0 +1,23 @@
+/* ========================================
+   VARIABLES - GLOBAL DESIGN SYSTEM
+======================================== */
+
+:root {
+
+      --teal:       #0a7c6e;
+      --teal-light: #0fa390;
+      --teal-pale:  #e6f5f3;
+      --teal-mid:   #c1ebe5;
+      --gold:       #d4a843;
+      --gold-light: #f0c96a;
+      --white:      #ffffff;
+      --off-white:  #9df7d9;
+      --text-dark:  #114242;
+      --text-mid:   #3d5a57;   
+      --text-light: #7a9e9a;
+      --border:     #d0e9e6;
+      --shadow:     0 4px 24px rgba(10,124,110,0.10);
+      --shadow-lg:  0 12px 48px rgba(10,124,110,0.16);
+      --font-main: 'Inter', sans-serif;
+
+}

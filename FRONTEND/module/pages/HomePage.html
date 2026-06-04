@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Phòng Khám Triệu Dân</title>
+
+  <!-- FONT -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <!-- CSS -->
+  <link rel="stylesheet" href="../../core/styles/variables.css">
+  <link rel="stylesheet" href="../../core/styles/global.css">
+  <link rel="stylesheet" href="../styles/home.css">
+  <!-- Sweet Alert 2 CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <!-- Axios (HTTP client) -->
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.7.8/dist/axios.min.js"></script>
+</head>
+
+<body>
+
+  <!-- ===== TOPBAR ===== -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div>📍 Linh Xuân, TP.HCM &nbsp;<span>|</span>&nbsp; ⏰ T2–T7: 07:00 – 17:00 &nbsp;</div>
+      <div><a href="tel:02812345678">📞 028 1234 5678</a> &nbsp;<span>|</span>&nbsp; <a href="mailto:info@phongkhamtrieudan.vn">✉️ info@phongkhamtrieudan.vn</a></div>
+    </div>
+  </div>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav>
+    <div class="nav-inner">
+      <a class="logo" href="#">
+        <div class="logo-icon">
+          <img src="assets/logo.jpg" alt="Logo Phòng Khám Triệu Dân" class="logo-image"/>
+        </div>
+        <div class="logo-text">
+          <strong>Phòng Khám Triệu Dân</strong>
+          <span>Chăm sóc sức khỏe chuyên nghiệp</span>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#" class="active">Trang Chủ</a></li>
+        <li><a href="#services">Dịch Vụ</a></li>
+        <li><a href="#doctors">Đội Ngũ Bác Sĩ</a></li>
+        <li><a href="QuyTrinhKham.html">Hướng Dẫn Khách Hàng</a></li>
+        <li><a href="#contact">Liên Hệ</a></li>
+      </ul>
+      <div class="nav-actions">
+        <a href="#appointment" class="btn-appt">Đặt Lịch Khám</a>
+        <button onclick="openLoginModal()" class="btn-login">Đăng Nhập</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="close" onclick="closeLoginModal()">&times;</span>
+        <h3>🔐 Đăng Nhập</h3>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Mã nhân viên *</label>
+          <input type="text" placeholder="Nhập mã nhân viên" id="loginEmployeeId"/>
+        </div>
+        <div class="form-group">
+          <label>Tên đăng nhập *</label>
+          <input type="text" placeholder="Nhập tên đăng nhập" id="loginUsername"/>
+        </div>
+        <div class="form-group">
+          <label>Mật khẩu *</label>
+          <input type="password" placeholder="Nhập mật khẩu" id="loginPassword"/>
+        </div>
+        <div class="form-group form-group-checkbox">
+          <label class="checkbox-label">
+            <input type="checkbox" id="rememberLogin"/> Ghi nhớ đăng nhập
+          </label>
+        </div>
+        <button class="btn-submit" onclick="handleLogin()">Đăng Nhập →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div id="forgotPasswordModal" class="modal">
+    <div class="modal-content">
+      
+      <!-- Screen 1: Find Account -->
+      <div class="fp-screen" id="fpScreen1">
+        <div class="modal-header">
+          <button class="btn-back" onclick="closeForgotPassword()" title="Quay lại">←</button>
+          <h3>🔍 Tìm Tài Khoản</h3>
+          <span></span>
+        </div>
+        <div class="modal-body">
+          <p class="screen-desc">Nhập email hoặc số điện thoại để tìm tài khoản của bạn</p>
+          <div class="form-group">
+            <label>Email hoặc Số Điện Thoại *</label>
+            <input type="text" id="fpEmailPhone" placeholder="Ví dụ: abc@example.com hoặc 0912345678" />
+          </div>
+          <button class="btn-submit" onclick="handleFindAccount()">Tiếp Tục →</button>
+        </div>
+      </div>
+
+      <!-- Screen 2: Verify OTP -->
+      <div class="fp-screen" id="fpScreen2" style="display: none;">
+        <div class="modal-header">
+          <button class="btn-back" onclick="backToScreen(1)" title="Quay lại">←</button>
+          <h3>✓ Xác Minh Tài Khoản</h3>
+          <span></span>
+        </div>
+        <div class="modal-body">
+          <p class="screen-desc">Nhập mã OTP được gửi đến tài khoản của bạn</p>
+          <div class="form-group">
+            <label>Mã OTP (4 hoặc 6 chữ số) *</label>
+            <input type="text" id="fpOtp" placeholder="Ví dụ: 123456" maxlength="6" />
+          </div>
+          <p class="screen-hint">💡 Mã OTP đã được gửi. Kiểm tra email hoặc tin nhắn của bạn</p>
+          <button class="btn-submit" onclick="handleVerifyOtp()">Xác Minh →</button>
+        </div>
+      </div>
+
+      <!-- Screen 3: Reset Password -->
+      <div class="fp-screen" id="fpScreen3" style="display: none;">
+        <div class="modal-header">
+          <button class="btn-back" onclick="backToScreen(2)" title="Quay lại">←</button>
+          <h3>🔐 Đặt Lại Mật Khẩu</h3>
+          <span></span>
+        </div>
+        <div class="modal-body">
+          <p class="screen-desc">Tạo mật khẩu mới cho tài khoản của bạn</p>
+          <div class="form-group">
+            <label>Mật Khẩu Mới *</label>
+            <input type="password" id="fpNewPassword" placeholder="Nhập mật khẩu mới" />
+          </div>
+          <div class="form-group">
+            <label>Xác Nhận Mật Khẩu *</label>
+            <input type="password" id="fpConfirmPassword" placeholder="Nhập lại mật khẩu" />
+          </div>
+          <p class="screen-hint">💡 Mật khẩu phải có ít nhất 8 ký tự</p>
+          <button class="btn-submit" onclick="handleResetPassword()">Cập Nhật Mật Khẩu →</button>
+        </div>
+      </div>
+
+      <!-- Screen 4: Success -->
+      <div class="fp-screen" id="fpScreen4" style="display: none;">
+        <div class="modal-header success">
+          <span></span>
+          <h3>✨ Thành Công!</h3>
+          <span></span>
+        </div>
+        <div class="modal-body success-body">
+          <div class="success-icon">✓</div>
+          <p class="success-message">Mật khẩu của bạn đã được thay đổi thành công</p>
+          <p class="success-submessage">Bạn có thể đăng nhập với mật khẩu mới ngay bây giờ</p>
+          <button class="btn-submit" onclick="handleBackToLogin()">← Quay Lại Đăng Nhập</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Registration Modal -->
+  <div id="registrationModal" class="modal">
+    <div class="modal-content registration-modal">
+      
+      <!-- Step 1: Employee Verification -->
+      <div class="reg-step" id="regStep1">
+        <div class="modal-header">
+          <span></span>
+          <h3>🔍 Bước 1: Xác Minh Nhân Viên</h3>
+          <span></span>
+        </div>
+        <div class="modal-body">
+          <div class="step-indicator">
+            <div class="step-dot active">1</div>
+            <div class="step-line"></div>
+            <div class="step-dot">2</div>
+            <div class="step-line"></div>
+            <div class="step-dot">3</div>
+            <div class="step-line"></div>
+            <div class="step-dot">4</div>
+          </div>
+          <p class="screen-desc">Vào đây là mức xác minh đặc biệt. Chỉ nhân viên phòng khám mới cóthể đăng ký.</p>
+          <div class="form-group">
+            <label>Địa Chỉ Nhân Viên *</label>
+            <input type="text" id="regEmployeeId" placeholder="Ví dụ: EMP001" />
+          </div>
+          <div class="form-group">
+            <label>
+Mã Mời ThưẬc Phòng Khám *
+              <span class="tooltip-icon" title="Liên hệ với Quản trị viên phòng khám để nhận mã đăng ký duy nhất của bạn">?</span>
+            </label>
+            <input type="text" id="regInvitationCode" placeholder="Ví dụ: CLINIC-2026-ABC1" maxlength="20" />
+            <p class="field-hint">Må phải có định dạng: CLINIC-2026-XXXX</p>
+          </div>
+          <button class="btn-submit" onclick="handleVerifyEmployee()">Xác Minh →</button>
+        </div>
+      </div>
+
+      <!-- Step 2: Profile Information -->
+      <div class="reg-step" id="regStep2" style="display: none;">
+        <div class="modal-header">
+          <button class="btn-back" onclick="backToRegStep(1)" title="Quay lại">←</button>
+          <h3>👥 Bước 2: Thông Tin Cá Nhân</h3>
+          <span></span>
+        </div>
+        <div class="modal-body">
+          <div class="step-indicator">
+            <div class="step-dot completed">✓</div>
+            <div class="step-line completed"></div>
+            <div class="step-dot active">2</div>
+            <div class="step-line"></div>
+            <div class="step-dot">3</div>
+            <div class="step-line"></div>
+            <div class="step-dot">4</div>
+          </div>
+          <p class="screen-desc">Vui lòng nhập thông tin cá nhân của bạn</p>
+          <div class="form-group">
+            <label>Họ và Tên Đầy Đủ *</label>
+            <input type="text" id="regFullName" placeholder="Ví dụ: Ngô Văn An" />
+          </div>
+          <div class="form-group">
+            <label>Chuyên Khoa/Vị Trí *</label>
+            <select id="regDepartment">
+              <option value="">-- Chọn vị trí --</option>
+              <option value="doctor">Bác Sĩ</option>
+              <option value="nurse">Điều Dưỡng Viên</option>
+              <option value="receptionist">Lế Tán</option>
+              <option value="admin">Quản Trị Viên</option>
+              <option value="pharmacist">Dược Sĩ</option>
+              <option value="technician">Kỹ Thuậ T</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Email Công Ty *</label>
+            <input type="email" id="regEmail" placeholder="Ví dụ: name@clinic.vn" />
+          </div>
+          <button class="btn-submit" onclick="handleProfileInfo()">Tiếp Tục →</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Security Setup -->
+      <div class="reg-step" id="regStep3" style="display: none;">
+        <div class="modal-header">
+          <button class="btn-back" onclick="backToRegStep(2)" title="Quay lại">←</button>
+          <h3>🔍 Bước 3: Thiết Lập Mật Khẩu</h3>
+          <span></span>
+        </div>
+        <div class="modal-body">
+          <div class="step-indicator">
+            <div class="step-dot completed">✓</div>
+            <div class="step-line completed"></div>
+            <div class="step-dot completed">✓</div>
+            <div class="step-line completed"></div>
+            <div class="step-dot active">3</div>
+            <div class="step-line"></div>
+            <div class="step-dot">4</div>
+          </div>
+          <p class="screen-desc">Thiết lập mật khẩu mạnh để bảo vệ tài khoản của bạn</p>
+          <div class="form-group">
+            <label>Mật Khẩu *</label>
+            <input type="password" id="regPassword" placeholder="Tối thiểu 8 ký tự" />
+            <div class="password-requirements">
+              <div class="req-item" id="req-length">Không dưới 8 ký tự</div>
+              <div class="req-item" id="req-upper">Có ít nhất 1 chữ hoa</div>
+              <div class="req-item" id="req-number">Có ít nhất 1 chữ số</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Xác Nhận Mật Khẩu *</label>
+            <input type="password" id="regConfirmPassword" placeholder="Nhập lại mật khẩu" />
+          </div>
+          <button class="btn-submit" onclick="handleSecuritySetup()">Hoàn Tất Đăng Ký →</button>
+        </div>
+      </div>
+
+      <!-- Step 4: Success / Pending Approval -->
+      <div class="reg-step" id="regStep4" style="display: none;">
+        <div class="modal-header success" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+          <span></span>
+          <h3>🌟 Chờ Phê Duyệt</h3>
+          <span></span>
+        </div>
+        <div class="modal-body success-body">
+          <div class="success-icon" style="background: #dbeafe; color: #3b82f6;">📋</div>
+          <p class="success-message">Yêu Cầu Đăng Ký Đã Được Gửi</p>
+          <p class="success-submessage">Cảm ơn bạn đã đăng ký! Yêu cầu của bạn đã được gửi đến Quản trị viên.</p>
+          <div class="pending-info">
+            <p><strong>Nhân Viên:</strong> <span id="pending-name"></span></p>
+            <p><strong>Vị Trí:</strong> <span id="pending-dept"></span></p>
+            <p><strong>Email:</strong> <span id="pending-email"></span></p>
+          </div>
+          <p class="pending-note">⚠ Bạn sẽ nhận được email xác nhận trong vòng 24 giờ. Vui lòng kiểm tra email thường xuyên.</p>
+          <button class="btn-submit" onclick="handleBackFromReg()">← Quay Lại Đăng Nhập</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="hero-circle c1"></div>
+    <div class="hero-circle c2"></div>
+    <div class="hero-circle c3"></div>
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge"><span class="dot"></span> Cơ sở y tế được cấp phép Bộ Y Tế</div>
+        <h1>Sức khỏe của bạn<br/>là <em>ưu tiên</em> của chúng tôi</h1>
+        <p>Phòng Khám Triệu Dân cung cấp dịch vụ khám và điều trị với đội ngũ bác sĩ giàu kinh nghiệm, trang thiết bị hiện đại và quy trình chăm sóc tận tâm.</p>
+        <div class="hero-actions">
+          <a href="#appointment" class="btn-hero-primary">🗓 Đặt Lịch Ngay</a>
+          <a href="#services" class="btn-hero-ghost">Xem Dịch Vụ →</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><strong>15+</strong><span>Năm kinh nghiệm</span></div>
+          <div class="hero-stat"><strong>50k+</strong><span>Bệnh nhân tin tưởng</span></div>
+          <div class="hero-stat"><strong>25+</strong><span>Bác sĩ chuyên khoa</span></div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-card-main hero-card">
+          <div class="doc-avatar">
+            <div class="avatar-img">👨‍⚕️</div>
+            <div class="doc-info">
+              <strong>BS. Dương Thanh Hiếu</strong>
+              <span>Trưởng khoa Nội tổng hợp</span>
+            </div>
+          </div>
+          <div class="doc-meta">
+            <div class="doc-meta-item"><strong>15+</strong>Năm KN</div>
+            <div class="doc-meta-item"><strong>4.9 ★</strong>Đánh giá</div>
+            <div class="doc-meta-item"><strong>3.2k</strong>Bệnh nhân</div>
+          </div>
+        </div>
+        <div class="hero-card">
+          <div class="card-label" id="todayScheduleLabel">Lịch khám hôm nay</div>
+          <div class="card-time-slots" id="todayScheduleSlots"></div>
+        </div>
+        <div class="hero-card">
+          <div class="next-avail"><span class="dot-green"></span> Còn lịch khám trong hôm nay – Đặt ngay kẻo hết chỗ!</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TRUST BAR ===== -->
+  <div class="trust-bar">
+    <div class="trust-inner">
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Được cấp phép Bộ Y Tế
+      </div>
+      <div class="trust-divider"></div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Trang thiết bị hiện đại
+      </div>
+      <div class="trust-divider"></div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Đội ngũ bác sĩ giàu kinh nghiệm
+      </div>
+      <div class="trust-divider"></div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Môi trường sạch sẽ, an toàn
+      </div>
+      <div class="trust-divider"></div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.82a19.79 19.79 0 01-3.07-8.67A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91A16 16 0 0016.01 18l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0124 19z"/></svg>
+        Hỗ trợ tư vấn 24/7
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SERVICES ===== -->
+  <section class="services" id="services">
+    <div class="services-inner">
+      <div class="section-header">
+        <div class="section-tag">Dịch Vụ</div>
+        <h2>Chuyên khoa đa dạng<br/>đáp ứng mọi nhu cầu</h2>
+        <p>Chúng tôi cung cấp đầy đủ các dịch vụ khám và điều trị chuyên sâu với quy trình chuẩn y tế quốc tế.</p>
+        <div class="section-divider"></div>
+      </div>
+      <div class="services-grid">
+        <a class="service-card" href="services/noi-tim-mach.html">
+          <div class="service-icon">🫀</div>
+          <h3>Nội Tim Mạch</h3>
+          <p>Chẩn đoán và điều trị các bệnh lý tim mạch, tăng huyết áp, rối loạn nhịp tim với thiết bị siêu âm tim hiện đại.</p>
+          <span class="service-link">Xem chi tiết →</span>
+        </a>
+        <a class="service-card" href="services/ho-hap-phoi.html">
+          <div class="service-icon">🫁</div>
+          <h3>Hô Hấp – Phổi</h3>
+          <p>Khám và điều trị hen suyễn, viêm phế quản, COPD và các bệnh đường hô hấp mạn tính.</p>
+          <span class="service-link">Xem chi tiết →</span>
+        </a>
+        <a class="service-card" href="services/nha-khoa.html">
+          <div class="service-icon">🦷</div>
+          <h3>Nha Khoa</h3>
+          <p>Dịch vụ trám răng, nhổ răng, cạo vôi, bọc sứ và chỉnh nha thẩm mỹ với công nghệ tiên tiến.</p>
+          <span class="service-link">Xem chi tiết →</span>
+        </a>
+        <a class="service-card" href="services/mat.html">
+          <div class="service-icon">👁</div>
+          <h3>Mắt</h3>
+          <p>Khám tật khúc xạ, đục thủy tinh thể, tăng nhãn áp và tư vấn phẫu thuật LASIK.</p>
+          <span class="service-link">Xem chi tiết →</span>
+        </a>
+        <a class="service-card" href="services/y-hoc-co-truyen.html">
+          <div class="service-icon">🌿</div>
+          <h3>Y Học Cổ Truyền</h3>
+          <p>Chẩn trị bằng phương pháp Đông y, kết hợp thảo dược và liệu pháp hỗ trợ an toàn, lành tính.</p>
+          <span class="service-link">Xem chi tiết →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== WHY US ===== -->
+  <section class="why-us">
+    <div class="why-inner">
+      <div class="why-visual">
+        <img class="why-image" src="assets/quy-dinh-mo-phong-mach-tu-nhan-1-scaled.jpg" alt="Phòng khám" />
+        <div class="why-badge-float">
+          <div class="num">50k+</div>
+          <div class="lbl">Bệnh nhân<br/>đã tin tưởng</div>
+        </div>
+        <div class="why-badge-float2">
+          ⭐ 4.9 / 5<br/><div>1,200+ đánh giá</div>
+        </div>
+      </div>
+      <div class="why-content">
+        <div class="section-tag">Tại Sao Chọn Chúng Tôi</div>
+        <h2>Cam kết chất lượng &amp; sự tận tâm trong từng dịch vụ</h2>
+        <p>Với hơn 15 năm hoạt động, Phòng Khám Triệu Dân luôn đặt lợi ích và sức khỏe của bệnh nhân lên hàng đầu, xây dựng niềm tin thông qua chuyên môn và sự chân thành.</p>
+        <div class="why-features">
+          <div class="why-feature">
+            <div class="why-feature-icon">🏆</div>
+            <div>
+              <h4>Bác sĩ chuyên khoa đầu ngành</h4>
+              <p>Đội ngũ hơn 25 bác sĩ với bằng cấp chuyên khoa từ các trường y hàng đầu trong và ngoài nước.</p>
+            </div>
+          </div>
+          <div class="why-feature">
+            <div class="why-feature-icon">⚡</div>
+            <div>
+              <h4>Kết quả nhanh – Ít chờ đợi</h4>
+              <p>Quy trình đặt lịch thông minh, kết quả xét nghiệm trong ngày, giảm tối đa thời gian chờ đợi.</p>
+            </div>
+          </div>
+          <div class="why-feature">
+            <div class="why-feature-icon">🔬</div>
+            <div>
+              <h4>Trang thiết bị hiện đại</h4>
+              <p>Đầu tư liên tục vào máy móc chẩn đoán thế hệ mới đạt chuẩn quốc tế ISO 15189.</p>
+            </div>
+          </div>
+          <div class="why-feature">
+            <div class="why-feature-icon">💚</div>
+            <div>
+              <h4>Chăm sóc sau điều trị</h4>
+              <p>Theo dõi sức khỏe bệnh nhân sau điều trị qua ứng dụng, tư vấn online miễn phí 30 ngày.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DOCTORS ===== -->
+  <section class="doctors" id="doctors">
+    <div class="doctors-inner">
+      <div class="section-header">
+        <div class="section-tag">Đội Ngũ Bác Sĩ</div>
+        <h2>Gặp gỡ các chuyên gia<br/>sức khỏe của bạn</h2>
+        <p>Mỗi bác sĩ tại Mai Nam đều được chọn lựa kỹ lưỡng về chuyên môn, y đức và kỹ năng giao tiếp với bệnh nhân.</p>
+        <div class="section-divider"></div>
+      </div>
+      <div class="doctors-carousel">
+        <button class="doctor-nav doctor-nav-left" type="button" aria-label="Bác sĩ trước">‹</button>
+        <div class="doctors-track">
+          <div class="doctor-card">
+          <div class="doctor-photo"><img src="assets/Hieu.jpg" alt="BS. Dương Thanh Hiếu" class="doctor-photo-img"/></div>
+          <div class="doctor-body">
+            <div class="doctor-rating"><span class="stars">★★★★★</span> 4.9 (312)</div>
+            <button class="btn-doc doctor-info-btn" type="button" data-doctor-id="hieu">Xem thông tin</button>
+          </div>
+        </div>
+          <div class="doctor-card">
+          <div class="doctor-photo"><img src="assets/Nham.png" alt="BS. Nguyễn Thị Nhâm" class="doctor-photo-img"/></div>
+          <div class="doctor-body">
+            <div class="doctor-rating"><span class="stars">★★★★★</span> 4.8 (289)</div>
+            <button class="btn-doc doctor-info-btn" type="button" data-doctor-id="nham">Xem thông tin</button>
+          </div>
+        </div>
+          <div class="doctor-card">
+          <div class="doctor-photo"><img src="assets/Tram.png" alt="BS. Nguyễn Vũ Thùy Trâm" class="doctor-photo-img"/></div>
+          <div class="doctor-body">
+            <div class="doctor-rating"><span class="stars">★★★★★</span> 4.9 (401)</div>
+            <button class="btn-doc doctor-info-btn" type="button" data-doctor-id="tram">Xem thông tin</button>
+          </div>
+        </div>
+          <div class="doctor-card">
+          <div class="doctor-photo"><img src="assets/Dan.jpg" alt="BS. Trần Triệu Dân" class="doctor-photo-img"/></div>
+          <div class="doctor-body">
+            <div class="doctor-rating"><span class="stars">★★★★★</span> 4.7 (198)</div>
+            <button class="btn-doc doctor-info-btn" type="button" data-doctor-id="dan">Xem thông tin</button>
+          </div>
+        </div>
+          <div class="doctor-card">
+          <div class="doctor-photo"><img src="assets/Vy.png" alt="BS. Nguyễn Trần Phương Vy" class="doctor-photo-img"/></div>
+          <div class="doctor-body">
+            <div class="doctor-rating"><span class="stars">★★★★★</span> 4.8 (214)</div>
+            <button class="btn-doc doctor-info-btn" type="button" data-doctor-id="vy">Xem thông tin</button>
+          </div>
+        </div>
+        </div>
+        <button class="doctor-nav doctor-nav-right" type="button" aria-label="Bác sĩ kế tiếp">›</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== APPOINTMENT ===== -->
+  <section class="appointment" id="appointment">
+    <div class="appt-inner">
+      <div class="appt-text">
+        <h2>Đặt lịch khám<br/>nhanh chóng &amp; dễ dàng</h2>
+        <p>Chỉ cần điền thông tin bên cạnh, chúng tôi sẽ liên hệ xác nhận lịch hẹn trong vòng 30 phút. Hoặc liên hệ trực tiếp qua:</p>
+        <div class="appt-contacts">
+          <div class="appt-contact"><div class="appt-contact-icon">📞</div> <span><strong>Hotline:</strong> 028 1234 5678</span></div>
+          <div class="appt-contact"><div class="appt-contact-icon">💬</div> <span><strong>Zalo:</strong> 0901 234 567</span></div>
+          <div class="appt-contact"><div class="appt-contact-icon">📍</div> <span>123 Nguyễn Văn Linh, Q.7, TP.HCM</span></div>
+          <div class="appt-contact"><div class="appt-contact-icon">⏰</div> <span>T2–T7: 07:00 – 17:00</span></div>
+        </div>
+      </div>
+      <div class="appt-form">
+        <h3>🗓 Đặt Lịch Khám</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Họ và tên *</label>
+            <input type="text" placeholder="Nguyễn Văn A"/>
+          </div>
+          <div class="form-group">
+            <label>Số điện thoại *</label>
+            <input type="tel" placeholder="0901 234 567"/>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Giới tính</label>
+            <select>
+              <option>-- Chọn giới tính --</option>
+              <option>Nam</option>
+              <option>Nữ</option>
+              <option>Khác</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>CCCD</label>
+            <input type="text" placeholder="123456789012" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="email" placeholder="example@mail.com" />
+          </div>
+          <div class="form-group">
+            <label>Ngày khám</label>
+            <input type="date" id="appointmentDate" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ngày Sinh *</label>
+            <input type="date" id="dob" />
+          </div>
+          <div class="form-group">
+            <label>Địa Chỉ</label>
+            <input type="text" id="address" placeholder="Số nhà, tên đường, phường, quận, thành phố" />
+          </div>
+        </div>
+        <button class="btn-submit">Xác Nhận Đặt Lịch →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TESTIMONIALS ===== -->
+  <section class="testimonials">
+    <div class="test-inner">
+      <div class="section-header">
+        <div class="section-tag">Đánh Giá</div>
+        <h2>Bệnh nhân nói gì về chúng tôi</h2>
+        <div class="section-divider"></div>
+      </div>
+      <div class="test-grid">
+        <div class="test-card">
+          <div class="test-stars">★★★★★</div>
+          <p>"Phòng khám sạch sẽ, bác sĩ nhiệt tình và chuyên môn cao. Tôi rất hài lòng với quy trình khám nhanh chóng, không phải chờ lâu."</p>
+          <div class="test-author">
+            <div class="test-avatar">👩</div>
+            <div class="test-name"><strong>Chị Nguyễn Thị Hoa</strong><span>Bệnh nhân nội tim mạch</span></div>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-stars">★★★★★</div>
+          <p>"BS. Minh giải thích rõ ràng, dễ hiểu. Kết quả xét nghiệm có trong ngày rất tiện. Tôi sẽ tiếp tục theo dõi sức khỏe tại đây."</p>
+          <div class="test-author">
+            <div class="test-avatar">👨</div>
+            <div class="test-name"><strong>Anh Trần Văn Khoa</strong><span>Bệnh nhân thần kinh</span></div>
+          </div>
+        </div>
+        <div class="test-card">
+          <div class="test-stars">★★★★★</div>
+          <p>"Đặt lịch online rất nhanh, chỉ 2 phút là xong. Đến đúng giờ không phải chờ. Dịch vụ chuyên nghiệp, xứng đáng 5 sao!"</p>
+          <div class="test-author">
+            <div class="test-avatar">👩</div>
+            <div class="test-name"><strong>Chị Lê Minh Châu</strong><span>Bệnh nhân nha khoa</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer id="contact">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a class="logo" href="#">
+          <div class="logo-icon">
+            <img src="assets/logo.jpg" alt="Logo Phòng Khám Triệu Dân" class="logo-image"/>
+          </div>
+          <div class="logo-text"><strong>Phòng Khám Triệu Dân</strong><span>Chăm sóc sức khỏe chuyên nghiệp</span></div>
+        </a>
+        <p>Hơn 15 năm đồng hành cùng sức khỏe cộng đồng. Chúng tôi tin rằng mọi người đều xứng đáng được chăm sóc y tế tốt nhất.</p>
+        <div class="footer-social">
+          <a class="social-btn" href="#">f</a>
+          <a class="social-btn" href="#">in</a>
+          <a class="social-btn" href="#">▶</a>
+          <a class="social-btn" href="#">Z</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Dịch Vụ</h4>
+        <ul>
+          <li><a href="#">Nội Tim Mạch</a></li>
+          <li><a href="#">Hô Hấp – Phổi</a></li>
+          <li><a href="#">Thần Kinh</a></li>
+          <li><a href="#">Nha Khoa</a></li>
+          <li><a href="#">Mắt</a></li>
+          <li><a href="#">Xét Nghiệm</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Liên Kết</h4>
+        <ul>
+          <li><a href="#">Giới Thiệu</a></li>
+          <li><a href="#">Đội Ngũ Bác Sĩ</a></li>
+          <li><a href="#">Tin Tức Sức Khỏe</a></li>
+          <li><a href="#">Câu Hỏi Thường Gặp</a></li>
+          <li><a href="#">Tuyển Dụng</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Liên Hệ</h4>
+        <ul>
+          <li><a href="#">📍 123 Nguyễn Văn Linh, Q.7</a></li>
+          <li><a href="#">📞 028 1234 5678</a></li>
+          <li><a href="#">✉️ info@phongkhamtrieudan.vn</a></li>
+          <li><a href="#">⏰ T2–T7: 07:00–17:00</a></li>
+          
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 Phòng Khám Triệu Dân. Bảo lưu mọi quyền.</span>
+      <span>Mã số giấy phép: 01234/GPHĐ-BYT</span>
+    </div>
+  </footer>
+
+  <!-- Floating Contact Buttons -->
+  <div class="floating-buttons">
+    <a href="https://zalo.me/0901234567" target="_blank" class="floating-btn zalo-btn" title="Zalo">
+      <img src="assets/zalo.jpg" alt="Zalo" class="floating-icon"/>
+    </a>
+    <a href="tel:0901234567" class="floating-btn phone-btn" title="Gọi điện">
+      <img src="assets/DT.jpg" alt="Phone" class="floating-icon"/>
+    </a>
+  </div>
+
+  <!-- Scroll to Top Button -->
+  <button id="scrollToTopBtn" class="scroll-to-top" title="Lên đầu trang">
+    &#8593;
+  </button>
+
+  <!-- Doctor Info Modal -->
+  <div id="doctorModal" class="doctor-modal" aria-hidden="true">
+    <div class="doctor-modal-backdrop" data-close="true"></div>
+    <div class="doctor-modal-content" role="dialog" aria-modal="true" aria-labelledby="doctorModalName">
+      <button class="doctor-modal-close" type="button" data-close="true" aria-label="Đóng">&times;</button>
+
+      <div class="doctor-hero">
+        <div class="doctor-hero-photo">
+          <img id="doctorModalPhoto" src="" alt="Ảnh bác sĩ" />
+        </div>
+        <div class="doctor-hero-info">
+          <span class="doctor-hero-tag">Bác sĩ chuyên khoa</span>
+          <h2 id="doctorModalName">Tên bác sĩ</h2>
+          <p id="doctorModalDegree" class="doctor-hero-degree">Học vị</p>
+          <div class="doctor-hero-meta">
+            <div>
+              <span>Chuyên khoa</span>
+              <strong id="doctorModalSpecialty">Nội tổng quát</strong>
+            </div>
+            <div>
+              <span>Kinh nghiệm</span>
+              <strong id="doctorModalYears">12 năm</strong>
+            </div>
+            <div>
+              <span>Đánh giá</span>
+              <strong id="doctorModalRating">4.9 ★</strong>
+            </div>
+          </div>
+          <div class="doctor-hero-actions">
+            <a class="btn-primary" href="#appointment">Đặt lịch khám</a>
+            <a class="btn-ghost" href="#contact">Liên hệ tư vấn</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="doctor-modal-body">
+        <section class="doctor-section reveal">
+          <h3>Giới thiệu bác sĩ</h3>
+          <p id="doctorModalIntro"></p>
+        </section>
+
+        <section class="doctor-section reveal">
+          <h3>Chuyên môn nổi bật</h3>
+          <div id="doctorModalTags" class="doctor-tags"></div>
+        </section>
+
+        <section class="doctor-section reveal">
+          <h3>Thành tựu &amp; Kinh nghiệm</h3>
+          <div class="doctor-achievements">
+            <div class="doctor-achievement">
+              <span>Số năm kinh nghiệm</span>
+              <strong id="doctorModalYearsText">12+</strong>
+            </div>
+            <div class="doctor-achievement">
+              <span>Công trình nghiên cứu</span>
+              <strong id="doctorModalResearch">18</strong>
+            </div>
+            <div class="doctor-achievement">
+              <span>Chứng chỉ chuyên môn</span>
+              <strong id="doctorModalCerts">10</strong>
+            </div>
+            <div class="doctor-achievement">
+              <span>Hội thảo y khoa</span>
+              <strong id="doctorModalConferences">25</strong>
+            </div>
+            <div class="doctor-achievement">
+              <span>Bệnh viện từng công tác</span>
+              <strong id="doctorModalHospitals">3</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="doctor-section reveal">
+          <h3>Lịch làm việc</h3>
+          <div class="doctor-schedule">
+            <div class="doctor-schedule-row">
+              <span>Thứ 2</span><span>07:00 - 11:30</span><span class="status available">Còn lịch</span>
+            </div>
+            <div class="doctor-schedule-row">
+              <span>Thứ 3</span><span>13:00 - 16:30</span><span class="status full">Hết lịch</span>
+            </div>
+            <div class="doctor-schedule-row">
+              <span>Thứ 4</span><span>07:00 - 11:30</span><span class="status available">Còn lịch</span>
+            </div>
+            <div class="doctor-schedule-row">
+              <span>Thứ 5</span><span>13:00 - 16:30</span><span class="status available">Còn lịch</span>
+            </div>
+            <div class="doctor-schedule-row">
+              <span>Thứ 6</span><span>07:00 - 11:30</span><span class="status full">Hết lịch</span>
+            </div>
+            <div class="doctor-schedule-row">
+              <span>Thứ 7</span><span>08:00 - 12:00</span><span class="status available">Còn lịch</span>
+            </div>
+            <div class="doctor-schedule-row">
+              <span>Chủ nhật</span><span>08:00 - 11:00</span><span class="status closed">Nghỉ</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="doctor-section reveal">
+          <h3>Feedback bệnh nhân</h3>
+          <div class="doctor-reviews">
+            <div class="doctor-review">
+              <div class="review-header">
+                <div class="review-avatar">👩‍⚕️</div>
+                <div>
+                  <strong>Chị Minh Anh</strong>
+                  <div class="review-stars">★★★★★</div>
+                </div>
+              </div>
+              <p>Thái độ tận tâm, giải thích rõ ràng và đưa ra phác đồ điều trị rất dễ hiểu.</p>
+            </div>
+            <div class="doctor-review">
+              <div class="review-header">
+                <div class="review-avatar">🧑‍💼</div>
+                <div>
+                  <strong>Anh Quang Huy</strong>
+                  <div class="review-stars">★★★★★</div>
+                </div>
+              </div>
+              <p>Khám kỹ, quy trình nhanh gọn, cảm giác an tâm và chuyên nghiệp.</p>
+            </div>
+            <div class="doctor-review">
+              <div class="review-header">
+                <div class="review-avatar">👩</div>
+                <div>
+                  <strong>Chị Thu Hà</strong>
+                  <div class="review-stars">★★★★☆</div>
+                </div>
+              </div>
+              <p>Bác sĩ tư vấn tận tình, theo dõi kỹ sau điều trị và nhắc lịch tái khám.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="doctor-cta reveal">
+          <div>
+            <h3>Đặt lịch khám với bác sĩ ngay hôm nay</h3>
+            <p>Nhận tư vấn trực tiếp và theo dõi chuyên sâu với đội ngũ bác sĩ hàng đầu.</p>
+          </div>
+          <div class="doctor-cta-actions">
+            <a class="btn-primary" href="#appointment">Đặt lịch</a>
+            <a class="btn-ghost" href="#contact">Liên hệ tư vấn</a>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Modal functionality
+    function openLoginModal() {
+      document.getElementById('loginModal').style.display = 'block';
+      document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').style.display = 'none';
+      document.body.style.overflow = 'auto'; // Restore scrolling
+    }
+
+    const API_BASE_URL = 'http://localhost:5000/api';
+
+    function getRedirectPath({ role, username, employeeId }) {
+      if (role === 'Admin' || username === 'admin') {
+        return '../../admin.html';
+      }
+      if (role === 'Bác sĩ') {
+        return '../../doctor.html';
+      }
+      if (role === 'Lễ tân') {
+        return '../../receptionist.html';
+      }
+      return null;
+    }
+
+    async function handleLogin() {
+      const employeeId = document.getElementById('loginEmployeeId').value.trim();
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const rememberLogin = document.getElementById('rememberLogin').checked;
+
+      if (!employeeId || !username || !password) {
+        alert('Vui lòng nhập đầy đủ mã nhân viên, tên đăng nhập và mật khẩu!');
+        return;
+      }
+
+      try {
+        const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+          employeeId,
+          username,
+          password
+        }, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        const { data } = response;
+        const token = data?.data?.token;
+        const role = data?.data?.ChucVu;
+        const employeeIdFromToken = data?.data?.MaNV;
+        const displayName = data?.data?.TenNV || username;
+
+        if (!token) {
+          alert('Đăng nhập thất bại: phản hồi không hợp lệ.');
+          return;
+        }
+
+        const storage = rememberLogin ? localStorage : sessionStorage;
+        storage.setItem('auth_token', token);
+        storage.setItem('auth_role', role || '');
+        storage.setItem('auth_name', displayName);
+        storage.setItem('auth_employee_id', employeeIdFromToken || employeeId);
+
+        alert(`Đăng nhập thành công! Chào mừng ${displayName}`);
+        closeLoginModal();
+
+        // Clear form
+        document.getElementById('loginEmployeeId').value = '';
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('rememberLogin').checked = false;
+
+        const redirectPath = getRedirectPath({ role, username, employeeId });
+        if (redirectPath) {
+          window.location.href = redirectPath;
+        }
+      } catch (error) {
+        const apiMessage = error?.response?.data?.message;
+        const fallbackMessage = error?.message || 'Không thể kết nối đến máy chủ.';
+        alert(apiMessage || fallbackMessage);
+      }
+    }
+
+    function getVietnamNowParts() {
+      const formatter = new Intl.DateTimeFormat('vi-VN', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      const parts = formatter.formatToParts(new Date());
+      const map = {};
+      parts.forEach(part => {
+        if (part.type !== 'literal') {
+          map[part.type] = part.value;
+        }
+      });
+      return map;
+    }
+
+    function renderTodaySchedule() {
+      const labelEl = document.getElementById('todayScheduleLabel');
+      const slotsEl = document.getElementById('todayScheduleSlots');
+      if (!labelEl || !slotsEl) return;
+
+      const now = getVietnamNowParts();
+      const dayName = now.weekday ? now.weekday.charAt(0).toUpperCase() + now.weekday.slice(1) : '';
+      labelEl.textContent = `Lịch khám hôm nay – ${dayName}, ${now.day}/${now.month}/${now.year}`;
+
+      const slotTimes = [
+        '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+        '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
+      ];
+
+      const nowMinutes = Number(now.hour) * 60 + Number(now.minute);
+      slotsEl.innerHTML = '';
+
+      slotTimes.forEach(time => {
+        const [hour, minute] = time.split(':').map(Number);
+        const slotMinutes = hour * 60 + minute;
+        const slotEl = document.createElement('span');
+        slotEl.className = `time-slot${slotMinutes <= nowMinutes ? ' passed' : ''}`;
+        slotEl.textContent = time;
+        slotsEl.appendChild(slotEl);
+      });
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('loginModal');
+      if (event.target === modal) {
+        closeLoginModal();
+      }
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeLoginModal();
+      }
+    });
+
+    // Scroll to top on page load unless an anchor is provided
+    window.addEventListener('load', function() {
+      if (!window.location.hash) {
+        window.scrollTo(0, 0);
+      }
+      renderTodaySchedule();
+    });
+
+    // Show/hide scroll to top button
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+    
+    window.addEventListener('scroll', function() {
+      if (window.pageYOffset > 300) {
+        scrollToTopBtn.classList.add('show');
+      } else {
+        scrollToTopBtn.classList.remove('show');
+      }
+    });
+
+    // Scroll to top when button is clicked
+    scrollToTopBtn.addEventListener('click', function() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+
+    // Handle navigation link active state
+    const navLinks = document.querySelectorAll('.nav-links a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', function(e) {
+        // Remove active class from all links (except special buttons)
+        navLinks.forEach(l => {
+          if (!l.classList.contains('btn-appt') && !l.classList.contains('btn-login')) {
+            l.classList.remove('active');
+          }
+        });
+        // Add active class to clicked link
+        if (!this.classList.contains('btn-appt') && !this.classList.contains('btn-login')) {
+          this.classList.add('active');
+        }
+      });
+    });
+
+    const doctorsTrack = document.querySelector('.doctors-track');
+    const doctorPrev = document.querySelector('.doctor-nav-left');
+    const doctorNext = document.querySelector('.doctor-nav-right');
+
+    if (doctorsTrack && doctorPrev && doctorNext) {
+      const scrollByCard = () => {
+        const card = doctorsTrack.querySelector('.doctor-card');
+        const gap = 24;
+        return card ? card.offsetWidth + gap : 280;
+      };
+
+      doctorPrev.addEventListener('click', () => {
+        doctorsTrack.scrollBy({ left: -scrollByCard(), behavior: 'smooth' });
+      });
+
+      doctorNext.addEventListener('click', () => {
+        doctorsTrack.scrollBy({ left: scrollByCard(), behavior: 'smooth' });
+      });
+    }
+
+    const doctorProfiles = {
+      hieu: {
+        name: 'Dương Thanh Hiếu',
+        degree: 'Tiến Sĩ Y Học',
+        specialty: 'Nội tổng quát - Nhi khoa',
+        years: '15 năm',
+        rating: '4.9 ★',
+        photo: 'assets/Hieu.jpg',
+        intro: 'Bác sĩ Dương Thanh Hiếu có hơn 15 năm kinh nghiệm trong chẩn đoán và điều trị nội khoa, tập trung vào chăm sóc toàn diện và phòng ngừa bệnh lý mạn tính.',
+        achievements: { years: '15+', research: '22', certs: '12', conferences: '30', hospitals: '3' }
+      },
+      nham: {
+        name: 'Nguyễn Thị Nhâm',
+        degree: 'PGS.TS Y Học',
+        specialty: 'Chuyên khoa Nội',
+        years: '14 năm',
+        rating: '4.8 ★',
+        photo: 'assets/Nham.png',
+        intro: 'PGS.TS Nguyễn Thị Nhâm nổi bật với thế mạnh điều trị nội khoa chuyên sâu, luôn lắng nghe và xây dựng phác đồ phù hợp với từng bệnh nhân.',
+        achievements: { years: '14+', research: '18', certs: '11', conferences: '26', hospitals: '4' }
+      },
+      tram: {
+        name: 'Nguyễn Vũ Thùy Trâm',
+        degree: 'Tiến Sĩ Y Học',
+        specialty: 'Tai mũi họng',
+        years: '12 năm',
+        rating: '4.9 ★',
+        photo: 'assets/Tram.png',
+        intro: 'Bác sĩ Thùy Trâm chuyên sâu tai mũi họng với phong cách khám kỹ lưỡng, giải thích rõ ràng và ưu tiên điều trị bảo tồn.',
+        achievements: { years: '12+', research: '16', certs: '9', conferences: '21', hospitals: '3' }
+      },
+      dan: {
+        name: 'Trần Triệu Dân',
+        degree: 'PGS.TS Y Học',
+        specialty: 'Y học cổ truyền',
+        years: '13 năm',
+        rating: '4.7 ★',
+        photo: 'assets/Dan.jpg',
+        intro: 'PGS.TS Trần Triệu Dân kết hợp y học cổ truyền và phương pháp hiện đại, hỗ trợ phục hồi toàn diện và nâng cao thể trạng.',
+        achievements: { years: '13+', research: '20', certs: '10', conferences: '24', hospitals: '2' }
+      },
+      vy: {
+        name: 'Nguyễn Trần Phương Vy',
+        degree: 'Thạc Sĩ Y Học',
+        specialty: 'Khám tổng quát',
+        years: '9 năm',
+        rating: '4.8 ★',
+        photo: 'assets/Vy.png',
+        intro: 'Thạc Sĩ Phương Vy tập trung chăm sóc sức khỏe tổng quát, tư vấn phòng ngừa và đồng hành cùng bệnh nhân trong quá trình điều trị.',
+        achievements: { years: '9+', research: '10', certs: '8', conferences: '15', hospitals: '2' }
+      }
+    };
+
+    const doctorTags = [
+      'Nội tổng quát',
+      'Tim mạch',
+      'Tai mũi họng',
+      'Y học cổ truyền',
+      'Nhi khoa',
+      'Khám tổng quát',
+      'Tư vấn sức khỏe'
+    ];
+
+    const doctorModal = document.getElementById('doctorModal');
+    const modalName = document.getElementById('doctorModalName');
+    const modalDegree = document.getElementById('doctorModalDegree');
+    const modalSpecialty = document.getElementById('doctorModalSpecialty');
+    const modalYears = document.getElementById('doctorModalYears');
+    const modalRating = document.getElementById('doctorModalRating');
+    const modalPhoto = document.getElementById('doctorModalPhoto');
+    const modalIntro = document.getElementById('doctorModalIntro');
+    const modalTags = document.getElementById('doctorModalTags');
+    const modalYearsText = document.getElementById('doctorModalYearsText');
+    const modalResearch = document.getElementById('doctorModalResearch');
+    const modalCerts = document.getElementById('doctorModalCerts');
+    const modalConferences = document.getElementById('doctorModalConferences');
+    const modalHospitals = document.getElementById('doctorModalHospitals');
+
+    function openDoctorModal(doctorId) {
+      const data = doctorProfiles[doctorId];
+      if (!data || !doctorModal) return;
+
+      modalName.textContent = data.name;
+      modalDegree.textContent = data.degree;
+      modalSpecialty.textContent = data.specialty;
+      modalYears.textContent = data.years;
+      modalRating.textContent = data.rating;
+      modalPhoto.src = data.photo;
+      modalPhoto.alt = `Ảnh bác sĩ ${data.name}`;
+      modalIntro.textContent = data.intro;
+      modalYearsText.textContent = data.achievements.years;
+      modalResearch.textContent = data.achievements.research;
+      modalCerts.textContent = data.achievements.certs;
+      modalConferences.textContent = data.achievements.conferences;
+      modalHospitals.textContent = data.achievements.hospitals;
+
+      modalTags.innerHTML = '';
+      doctorTags.forEach(tag => {
+        const chip = document.createElement('span');
+        chip.className = 'doctor-tag';
+        chip.textContent = tag;
+        modalTags.appendChild(chip);
+      });
+
+      doctorModal.classList.add('open');
+      doctorModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDoctorModal() {
+      if (!doctorModal) return;
+      doctorModal.classList.remove('open');
+      doctorModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = 'auto';
+    }
+
+    document.querySelectorAll('.doctor-info-btn').forEach(button => {
+      button.addEventListener('click', () => {
+        openDoctorModal(button.dataset.doctorId);
+      });
+    });
+
+    if (doctorModal) {
+      doctorModal.addEventListener('click', event => {
+        // Close if clicking backdrop or close button
+        if (event.target === doctorModal || 
+            event.target.classList.contains('doctor-modal-backdrop') ||
+            event.target.classList.contains('doctor-modal-close')) {
+          closeDoctorModal();
+        }
+      });
+    }
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && doctorModal?.classList.contains('open')) {
+        closeDoctorModal();
+      }
+    });
+
+    const modalObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.2 });
+
+    document.querySelectorAll('.doctor-modal .reveal').forEach(el => modalObserver.observe(el));
+
+    // ===== FORGOT PASSWORD FUNCTIONALITY =====
+    let fpCurrentScreen = 1;
+    let fpAccountData = {}; // Store account data across screens
+
+    function startForgotPassword(e) {
+      e.preventDefault();
+      closeLoginModal();
+      document.getElementById('forgotPasswordModal').style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      fpCurrentScreen = 1;
+      showFPScreen(1);
+    }
+
+    function closeForgotPassword() {
+      document.getElementById('forgotPasswordModal').style.display = 'none';
+      document.body.style.overflow = 'auto';
+      resetForgotPasswordForm();
+    }
+
+    function resetForgotPasswordForm() {
+      document.getElementById('fpEmailPhone').value = '';
+      document.getElementById('fpOtp').value = '';
+      document.getElementById('fpNewPassword').value = '';
+      document.getElementById('fpConfirmPassword').value = '';
+      fpAccountData = {};
+    }
+
+    function showFPScreen(screenNumber) {
+      // Hide all screens
+      for (let i = 1; i <= 4; i++) {
+        const screen = document.getElementById('fpScreen' + i);
+        if (screen) {
+          screen.style.display = 'none';
+        }
+      }
+      // Show requested screen with animation
+      const targetScreen = document.getElementById('fpScreen' + screenNumber);
+      if (targetScreen) {
+        targetScreen.style.display = 'block';
+        targetScreen.classList.add('screen-fade-in');
+      }
+      fpCurrentScreen = screenNumber;
+    }
+
+    function backToScreen(screenNumber) {
+      showFPScreen(screenNumber);
+    }
+
+    function handleFindAccount() {
+      const emailPhone = document.getElementById('fpEmailPhone').value.trim();
+
+      if (!emailPhone) {
+        alert('Vui lòng nhập email hoặc số điện thoại!');
+        return;
+      }
+
+      // Validate email or phone format
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const phonePattern = /^(0\d{9,10}|\+84\d{9,10})$/;
+
+      if (!emailPattern.test(emailPhone) && !phonePattern.test(emailPhone)) {
+        alert('Vui lòng nhập email hoặc số điện thoại hợp lệ!');
+        return;
+      }
+
+      // Store account data
+      fpAccountData.account = emailPhone;
+
+      // Simulate API call - proceed to OTP screen
+      showFPScreen(2);
+    }
+
+    function handleVerifyOtp() {
+      const otp = document.getElementById('fpOtp').value.trim();
+
+      if (!otp) {
+        alert('Vui lòng nhập mã OTP!');
+        return;
+      }
+
+      if (otp.length < 4 || otp.length > 6 || isNaN(otp)) {
+        alert('Mã OTP phải là 4 hoặc 6 chữ số!');
+        return;
+      }
+
+      // Store OTP data
+      fpAccountData.otp = otp;
+
+      // Simulate API validation - proceed to reset password screen
+      showFPScreen(3);
+    }
+
+    function handleResetPassword() {
+      const newPassword = document.getElementById('fpNewPassword').value;
+      const confirmPassword = document.getElementById('fpConfirmPassword').value;
+
+      if (!newPassword || !confirmPassword) {
+        alert('Vui lòng nhập đầy đủ mật khẩu mới và xác nhận!');
+        return;
+      }
+
+      if (newPassword.length < 8) {
+        alert('Mật khẩu phải có ít nhất 8 ký tự!');
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        alert('Mật khẩu và xác nhận mật khẩu không khớp!');
+        return;
+      }
+
+      // Store password data
+      fpAccountData.newPassword = newPassword;
+
+      // Simulate API call to update password
+      showFPScreen(4);
+    }
+
+    function handleBackToLogin() {
+      closeForgotPassword();
+      openLoginModal();
+    }
+
+    // Close forgot password modal when clicking outside
+    window.onclick = function(event) {
+      const loginModal = document.getElementById('loginModal');
+      const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+
+      if (event.target === loginModal) {
+        closeLoginModal();
+      }
+      if (event.target === forgotPasswordModal) {
+        closeForgotPassword();
+      }
+    }
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+        if (forgotPasswordModal && forgotPasswordModal.style.display === 'block') {
+          closeForgotPassword();
+        }
+        closeLoginModal();
+      }
+    });
+
+    // Allow Enter key to submit forms in forgot password
+    document.addEventListener('keypress', function(event) {
+      const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+      if (forgotPasswordModal && forgotPasswordModal.style.display === 'block') {
+        if (event.key === 'Enter') {
+          if (fpCurrentScreen === 1) {
+            handleFindAccount();
+          } else if (fpCurrentScreen === 2) {
+            handleVerifyOtp();
+          } else if (fpCurrentScreen === 3) {
+            handleResetPassword();
+          }
+        }
+      }
+    });
+
+    // ===== REGISTRATION FUNCTIONALITY =====
+    let regCurrentStep = 1;
+    let regUserData = {}; // Store registration data across steps
+
+    // Accepted invitation codes format
+    const INVITATION_CODE_PATTERN = /^CLINIC-2026-[A-Z0-9]{4}$/;
+
+    function startRegistration(e) {
+      e.preventDefault();
+      closeLoginModal();
+      document.getElementById('registrationModal').style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      regCurrentStep = 1;
+      showRegStep(1);
+    }
+
+    function closeRegistration() {
+      document.getElementById('registrationModal').style.display = 'none';
+      document.body.style.overflow = 'auto';
+      resetRegistrationForm();
+    }
+
+    function resetRegistrationForm() {
+      document.getElementById('regEmployeeId').value = '';
+      document.getElementById('regInvitationCode').value = '';
+      document.getElementById('regFullName').value = '';
+      document.getElementById('regDepartment').value = '';
+      document.getElementById('regEmail').value = '';
+      document.getElementById('regPassword').value = '';
+      document.getElementById('regConfirmPassword').value = '';
+      regUserData = {};
+    }
+
+    function showRegStep(stepNumber) {
+      // Hide all steps
+      for (let i = 1; i <= 4; i++) {
+        const step = document.getElementById('regStep' + i);
+        if (step) {
+          step.style.display = 'none';
+        }
+      }
+      // Show requested step with animation
+      const targetStep = document.getElementById('regStep' + stepNumber);
+      if (targetStep) {
+        targetStep.style.display = 'block';
+        targetStep.classList.add('screen-fade-in');
+      }
+      regCurrentStep = stepNumber;
+    }
+
+    function backToRegStep(stepNumber) {
+      showRegStep(stepNumber);
+    }
+
+    function handleVerifyEmployee() {
+      const employeeId = document.getElementById('regEmployeeId').value.trim();
+      const invitationCode = document.getElementById('regInvitationCode').value.trim();
+
+      // Validation
+      if (!employeeId) {
+        alert('Vui lòng nhập địa chỉ nhân viên!');
+        return;
+      }
+
+      if (!invitationCode) {
+        alert('Vui lòng nhập mã mời thưởng từ quản trị viên!');
+        return;
+      }
+
+      // Validate invitation code format
+      if (!INVITATION_CODE_PATTERN.test(invitationCode)) {
+        alert('Mã mời không hợp lệ! Định dạng phải là: CLINIC-2026-XXXX\n\nVí dụ: CLINIC-2026-ABC1');
+        return;
+      }
+
+      // Mock validation - check if code exists
+      // In production, this would be an API call
+      const validCodes = ['CLINIC-2026-ABC1', 'CLINIC-2026-DEF2', 'CLINIC-2026-GHI3', 'CLINIC-2026-XYZ9'];
+      if (!validCodes.includes(invitationCode)) {
+        alert('Mã mời không tồn tại. Vui lòng kiểm tra lại!\n\nMã hợp lệ để thử: CLINIC-2026-ABC1');
+        return;
+      }
+
+      // Store data
+      regUserData.employeeId = employeeId;
+      regUserData.invitationCode = invitationCode;
+
+      // Proceed to step 2
+      showRegStep(2);
+    }
+
+    function handleProfileInfo() {
+      const fullName = document.getElementById('regFullName').value.trim();
+      const department = document.getElementById('regDepartment').value;
+      const email = document.getElementById('regEmail').value.trim();
+
+      // Validation
+      if (!fullName) {
+        alert('Vui lòng nhập họ và tên!');
+        return;
+      }
+
+      if (!department) {
+        alert('Vui lòng chọn chuyên khoa/vị trí!');
+        return;
+      }
+
+      if (!email) {
+        alert('Vui lòng nhập email!');
+        return;
+      }
+
+      // Email validation
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(email)) {
+        alert('Vui lòng nhập email hợp lệ!');
+        return;
+      }
+
+      // Store data
+      regUserData.fullName = fullName;
+      regUserData.department = department;
+      regUserData.email = email;
+
+      // Proceed to step 3
+      showRegStep(3);
+    }
+
+    function handleSecuritySetup() {
+      const password = document.getElementById('regPassword').value;
+      const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+      // Validation
+      if (!password) {
+        alert('Vui lòng nhập mật khẩu!');
+        return;
+      }
+
+      if (password.length < 8) {
+        alert('Mật khẩu phải có ít nhất 8 ký tự!');
+        return;
+      }
+
+      // Check password requirements
+      const hasUpperCase = /[A-Z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+
+      if (!hasUpperCase || !hasNumber) {
+        alert('Mật khẩu phải chứa ít nhất 1 chữ hoa và 1 chữ số!');
+        return;
+      }
+
+      if (!confirmPassword) {
+        alert('Vui lòng xác nhận mật khẩu!');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert('Mật khẩu và xác nhận mật khẩu không khớp!');
+        return;
+      }
+
+      // Store data
+      regUserData.password = password;
+
+      // Populate success screen with user data
+      document.getElementById('pending-name').textContent = regUserData.fullName;
+      const deptLabels = {
+        doctor: 'Bác Sĩ',
+        nurse: 'Điều Dưỡng Viên',
+        receptionist: 'Lễ Tán',
+        admin: 'Quản Trị Viên',
+        pharmacist: 'Dược Sĩ',
+        technician: 'Kỹ Thuật Viên'
+      };
+      document.getElementById('pending-dept').textContent = deptLabels[regUserData.department] || regUserData.department;
+      document.getElementById('pending-email').textContent = regUserData.email;
+
+      // Proceed to step 4
+      showRegStep(4);
+    }
+
+    function handleBackFromReg() {
+      closeRegistration();
+      openLoginModal();
+    }
+
+    // Password validation in real-time
+    document.getElementById('regPassword') && document.getElementById('regPassword').addEventListener('keyup', function() {
+      const password = this.value;
+      
+      // Check length
+      const lengthReq = document.getElementById('req-length');
+      if (password.length >= 8) {
+        lengthReq.classList.add('met');
+      } else {
+        lengthReq.classList.remove('met');
+      }
+
+      // Check uppercase
+      const upperReq = document.getElementById('req-upper');
+      if (/[A-Z]/.test(password)) {
+        upperReq.classList.add('met');
+      } else {
+        upperReq.classList.remove('met');
+      }
+
+      // Check number
+      const numberReq = document.getElementById('req-number');
+      if (/[0-9]/.test(password)) {
+        numberReq.classList.add('met');
+      } else {
+        numberReq.classList.remove('met');
+      }
+    });
+
+    // Close registration modal when clicking outside
+    window.onclick = function(event) {
+      const loginModal = document.getElementById('loginModal');
+      const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+      const registrationModal = document.getElementById('registrationModal');
+
+      if (event.target === loginModal) {
+        closeLoginModal();
+      }
+      if (event.target === forgotPasswordModal) {
+        closeForgotPassword();
+      }
+      if (event.target === registrationModal) {
+        closeRegistration();
+      }
+    }
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        const registrationModal = document.getElementById('registrationModal');
+        const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+        if (registrationModal && registrationModal.style.display === 'block') {
+          closeRegistration();
+        }
+        if (forgotPasswordModal && forgotPasswordModal.style.display === 'block') {
+          closeForgotPassword();
+        }
+        closeLoginModal();
+      }
+    });
+  </script>
+
+  <!-- Sweet Alert 2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+  <!-- Appointment Booking JS -->
+  <script src="../../js/appointmentBooking.js"></script>
+
+  <!-- Set minimum date to today for appointment date picker -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const appointmentDateInput = document.querySelector('input[type="date"]');
+      if (appointmentDateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        appointmentDateInput.min = today;
+      }
+    });
+  </script>
+
+</body>
+</html>

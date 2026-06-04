@@ -1,0 +1,48 @@
+/* RESET */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* HTML */
+html {
+  scroll-behavior: smooth;
+}
+
+/* BODY */
+body {
+  font-family: var(--font-main);
+  color: var(--text-dark);
+  background: var(--white);
+  overflow-x: hidden;
+}
+
+/* ANIMATIONS */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.7; }
+}
+
+/* RESPONSIVE GLOBAL */
+@media (max-width: 900px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    font-size: 13px;
+  }
+}

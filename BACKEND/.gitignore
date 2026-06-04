@@ -1,0 +1,13 @@
+# Các thư mục chứa thư viện
+node_modules/
+
+# File cấu hình bảo mật (QUAN TRỌNG)
+.env
+.env.local
+
+# Các file log và cache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+
