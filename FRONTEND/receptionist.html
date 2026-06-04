@@ -655,27 +655,29 @@
                 </div>
                 <div class="card-body">
                     <div class="search-box">
-                        <input type="text" id="patientSearchInput" class="form-control" placeholder="Nhập mã bệnh nhân hoặc tên...">
+                        <input type="text" id="patientSearchInput" class="form-control" placeholder="Nhập mã bệnh nhân hoặc tên..." onkeyup="searchPatient()">
                         <button class="btn btn-primary" onclick="searchPatient()"><i class="bi bi-search"></i> Tìm Kiếm</button>
                     </div>
 
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Mã Bệnh Nhân</th>
-                                <th>Họ và Tên</th>
-                                <th>Năm Sinh</th>
-                                <th>Giới Tính</th>
-                                <th>Ngày Tiếp Nhận</th>
-                                <th>Hành Động</th>
-                            </tr>
-                        </thead>
-                        <tbody id="patientSearchResults">
-                            <tr>
-                                <td colspan="6" class="text-center text-muted">Nhập thông tin tìm kiếm...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Mã Bệnh Nhân</th>
+                                    <th>Họ và Tên</th>
+                                    <th>Năm Sinh</th>
+                                    <th>Giới Tính</th>
+                                    <th>Ngày Tiếp Nhận</th>
+                                    <th>Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="patientSearchResults">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">Nhập thông tin tìm kiếm...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                     <div id="patientPagination" style="display:flex; justify-content:center; margin-top:12px;"></div>
                 </div>
             </div>
@@ -800,7 +802,7 @@
                 </div>
                 <div class="card-body">
                     <div class="search-box">
-                        <input type="text" id="examSearchInput" class="form-control" placeholder="Nhập mã phiếu khám hoặc tên bệnh nhân...">
+                        <input type="text" id="examSearchInput" class="form-control" placeholder="Nhập mã phiếu khám hoặc tên bệnh nhân..." onkeyup="searchExam()">
                         <button class="btn btn-primary" onclick="searchExam()"><i class="bi bi-search"></i> Tìm Kiếm</button>
                     </div>
 
@@ -843,7 +845,7 @@
                 </div>
                 <div class="card-body">
                     <div class="search-box">
-                        <input type="text" id="medicineSearchInput" class="form-control" placeholder="Nhập tên thuốc...">
+                        <input type="text" id="medicineSearchInput" class="form-control" placeholder="Nhập tên thuốc..." onkeyup="searchMedicine()">
                         <button class="btn btn-primary" onclick="searchMedicine()"><i class="bi bi-search"></i> Tìm Kiếm</button>
                     </div>
 
@@ -882,7 +884,7 @@
                 </div>
                 <div class="card-body">
                     <div class="search-box">
-                        <input type="text" id="diseaseSearchInput" class="form-control" placeholder="Nhập tên loại bệnh...">
+                        <input type="text" id="diseaseSearchInput" class="form-control" placeholder="Nhập tên loại bệnh..." onkeyup="searchDisease()">
                         <button class="btn btn-primary" onclick="searchDisease()"><i class="bi bi-search"></i> Tìm Kiếm</button>
                     </div>
 
@@ -1078,9 +1080,9 @@
             if (!input || !container) return;
 
             const updateSuggestions = () => {
-                const value = input.value.trim().toLowerCase();
+                const value = normalizeSearchText(input.value);
                 const matches = diseaseTypeOptions.filter(option =>
-                    option.toLowerCase().includes(value)
+                    normalizeSearchText(option).includes(value)
                 );
                 renderDiseaseSuggestions(matches);
                 container.classList.remove('hidden');
@@ -1224,7 +1226,7 @@
                         <td>${p.TenBN}</td>
                         <td>${birthYear}</td>
                         <td><span class="badge ${p.GioiTinh === 'Nam' ? 'bg-primary' : 'bg-info'}">${p.GioiTinh || '-'}</span></td>
-                        <td>${p.NgayTiepNhan || '-'}</td>
+                        <td>${formatDate(p.NgayTiepNhan) || '-'}</td>
                         <td>
                             <button type="button" class="btn btn-primary btn-sm" onclick="viewPatientDetail('${p.MaBN}')">Xem chi tiết</button>
                             <button type="button" class="btn btn-danger btn-sm" onclick="deletePatient('${p.MaBN}')">Xoa</button>
@@ -1289,7 +1291,7 @@
         }
 
         async function searchPatient() {
-            const searchInput = document.getElementById('patientSearchInput').value.toLowerCase().trim();
+            const searchInput = normalizeSearchText(document.getElementById('patientSearchInput').value);
             // If cache not loaded yet, load it first
             if (!patientsCache) {
                 await loadAllPatients();
@@ -1306,8 +1308,8 @@
             }
 
             const filtered = patients.filter(p => {
-                const maBN = (p.MaBN || '').toString().toLowerCase();
-                const tenBN = (p.TenBN || '').toLowerCase();
+                const maBN = normalizeSearchText(p.MaBN);
+                const tenBN = normalizeSearchText(p.TenBN);
                 return maBN.includes(searchInput) || tenBN.includes(searchInput);
             });
 
@@ -1445,7 +1447,7 @@
 
         // searchExam now filters cached exams client-side
         async function searchExam() {
-            const searchInput = document.getElementById('examSearchInput').value.toLowerCase().trim();
+            const searchInput = normalizeSearchText(document.getElementById('examSearchInput').value);
             if (!examsCache) await loadAllExams();
             const results = document.getElementById('examSearchResults');
             if (!searchInput) {
@@ -1454,8 +1456,8 @@
             }
 
             const filtered = (examsCache || []).filter(e => {
-                const maPK = (e.MaPK || '').toString().toLowerCase();
-                const tenBN = (e.TenBN || '').toLowerCase();
+                const maPK = normalizeSearchText(e.MaPK);
+                const tenBN = normalizeSearchText(e.TenBN);
                 return maPK.includes(searchInput) || tenBN.includes(searchInput);
             });
 
@@ -1925,14 +1927,29 @@
 
         async function searchMedicine() {
             const q = (document.getElementById('medicineSearchInput').value || '').trim();
+            const keyword = normalizeSearchText(q);
             const results = document.getElementById('medicineSearchResults');
 
             // if no query, show full list (loadAllMedicines will handle caching)
-            if (!q) {
+            if (!keyword) {
                 if (!medicinesCache) await loadAllMedicines();
                 else renderMedicineRows(medicinesCache);
                 return;
             }
+
+            if (!medicinesCache) await loadAllMedicines();
+            const cachedItems = (medicinesCache || []).filter(m =>
+                normalizeSearchText(m.TenThuoc).includes(keyword) ||
+                normalizeSearchText(m.TenDVT).includes(keyword) ||
+                normalizeSearchText(m.MoTaCachDung).includes(keyword) ||
+                normalizeSearchText(m.MaThuoc).includes(keyword)
+            );
+            if (cachedItems.length === 0) {
+                results.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Không tìm thấy kết quả</td></tr>';
+                return;
+            }
+            renderMedicineRows(cachedItems);
+            return;
 
             try {
                 const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
@@ -2021,7 +2038,7 @@
             results.innerHTML = pageItems.map(d => `
                 <tr>
                     <td>${d.MaLoaiBenh}</td>
-                    <td><strong>${d.TenBenh || '-'}</strong></td>
+                    <td>${d.TenLoaiBenh || d.TenBenh || d.name || '-'}</td>
                     <td>${d.MoTa || '-'}</td>
                 </tr>
             `).join('');
@@ -2031,8 +2048,9 @@
 
         async function searchDisease() {
             const q = (document.getElementById('diseaseSearchInput').value || '').trim();
+            const keyword = normalizeSearchText(q);
             const results = document.getElementById('diseaseSearchResults');
-            if (!q) {
+            if (!keyword) {
                 if (!diseasesCache) await loadAllDiseases();
                 else renderDiseaseRows(diseasesCache);
                 return;
@@ -2040,7 +2058,11 @@
 
             // client-side filter of cached list for simplicity
             if (!diseasesCache) await loadAllDiseases();
-            const filtered = (diseasesCache || []).filter(d => (d.TenBenh || '').toLowerCase().includes(q.toLowerCase()) || (d.MaLoaiBenh || '').toString().includes(q));
+            const filtered = (diseasesCache || []).filter(d =>
+                normalizeSearchText(d.TenLoaiBenh || d.TenBenh || d.name).includes(keyword) ||
+                normalizeSearchText(d.MoTa || d.MoTaTrieuChung).includes(keyword) ||
+                normalizeSearchText(d.MaLoaiBenh).includes(keyword)
+            );
             if (!filtered || filtered.length === 0) {
                 results.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Không tìm thấy kết quả</td></tr>';
                 return;
@@ -2328,6 +2350,16 @@
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
             return `${day}/${month}/${year}`;
+        }
+
+        function normalizeSearchText(value) {
+            return String(value || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd')
+                .replace(/Đ/g, 'D')
+                .toLowerCase()
+                .trim();
         }
 
         function formatDateForInput(value) {

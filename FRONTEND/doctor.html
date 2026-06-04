@@ -416,11 +416,11 @@
 
         <ul class="nav-menu">
             <li><a href="#" class="nav-link active" data-section="profile"><i class="bi bi-person-circle"></i> Hồ Sơ Cá Nhân</a></li>
-            <li><a href="#" class="nav-link" data-section="patient-lookup"><i class="bi bi-search"></i> Tra Cứu BN</a></li>
-            <li><a href="#" class="nav-link" data-section="exam-lookup"><i class="bi bi-search-heart"></i> Tra Cứu Khám</a></li>
-            <li><a href="#" class="nav-link" data-section="exam-form"><i class="bi bi-file-earmark-medical"></i> Lập Phiếu Khám</a></li>
-            <li><a href="#" class="nav-link" data-section="medicine-lookup"><i class="bi bi-capsule"></i> Tra Cứu Thuốc</a></li>
-            <li><a href="#" class="nav-link" data-section="disease-lookup"><i class="bi bi-clipboard-pulse"></i> Tra Cứu Bệnh</a></li>
+            <li><a href="#" class="nav-link" data-section="patient-lookup"><i class="bi bi-search"></i> Tra Cứu Bệnh Nhân</a></li>
+            <li><a href="#" class="nav-link" data-section="exam-lookup"><i class="bi bi-search-heart"></i> Tra Cứu Phiếu Khám Bệnh</a></li>
+            <li><a href="#" class="nav-link" data-section="exam-form"><i class="bi bi-file-earmark-medical"></i> Chi Tiết Phiếu Khám Bệnh</a></li>
+            <li><a href="#" class="nav-link" data-section="medicine-lookup"><i class="bi bi-capsule"></i> Tra Cứu Danh Sách Thuốc</a></li>
+            <li><a href="#" class="nav-link" data-section="disease-lookup"><i class="bi bi-clipboard-pulse"></i> Tra Cứu Danh Sách Loại Bệnh</a></li>
         </ul>
     </div>
 
@@ -554,19 +554,79 @@
                                     <th>Năm Sinh</th>
                                     <th>Giới Tính</th>
                                     <th>Ngày Tiếp Nhận</th>
-                                    <th>Địa Chỉ / Ghi Chú</th>
+                                    <th>Hành Động</th>
                                 </tr>
                             </thead>
                             <tbody id="patientSearchResults">
                                 <tr>
-                                    <td colspan="6" class="no-results">Nhập thông tin tìm kiếm...</td>
+                                    <td colspan="6" class="no-results">Đang tải dữ liệu...</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                    <div id="patientPagination" style="display:flex; justify-content:center; margin-top:12px;"></div>
                 </div>
             </div>
         </div>
+
+        <!-- MODAL HỒ SƠ BỆNH NHÂN (DOCTOR) -->
+        <div id="doctorPatientModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:white; padding:28px; border-radius:14px; box-shadow:0 8px 40px rgba(0,0,0,0.25); z-index:1002; width:860px; max-width:96%; max-height:90vh; overflow-y:auto;">
+            <h4 style="color:#1f3a93; margin-bottom:18px; display:flex; align-items:center; gap:8px;">
+                <i class="bi bi-person-vcard"></i> Hồ Sơ Bệnh Nhân
+            </h4>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:6px;">
+                <div>
+                    <label style="font-weight:600; color:#666; font-size:12px; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em;">Họ và Tên</label>
+                    <p id="docModalTenBN" style="margin:0; color:#1f3a93; font-weight:700; font-size:16px;">—</p>
+                </div>
+                <div>
+                    <label style="font-weight:600; color:#666; font-size:12px; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em;">Ngày Sinh</label>
+                    <p id="docModalNgaySinh" style="margin:0; color:#1f3a93; font-weight:600;">—</p>
+                </div>
+                <div>
+                    <label style="font-weight:600; color:#666; font-size:12px; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em;">Giới Tính</label>
+                    <p id="docModalGioiTinh" style="margin:0; color:#1f3a93; font-weight:600;">—</p>
+                </div>
+                <div>
+                    <label style="font-weight:600; color:#666; font-size:12px; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em;">CCCD</label>
+                    <p id="docModalCCCD" style="margin:0; color:#1f3a93; font-weight:600;">—</p>
+                </div>
+                <div>
+                    <label style="font-weight:600; color:#666; font-size:12px; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em;">Số Điện Thoại</label>
+                    <p id="docModalSDT" style="margin:0; color:#1f3a93; font-weight:600;">—</p>
+                </div>
+                <div>
+                    <label style="font-weight:600; color:#666; font-size:12px; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em;">Địa Chỉ</label>
+                    <p id="docModalDiaChi" style="margin:0; color:#1f3a93; font-weight:600;">—</p>
+                </div>
+            </div>
+
+            <h5 style="margin-top:20px; color:#1f3a93; border-top:1px solid #e0e0e0; padding-top:16px; display:flex; align-items:center; gap:8px;">
+                <i class="bi bi-clock-history"></i> Lịch Sử Khám Bệnh (5 Năm Gần Đây)
+            </h5>
+            <div style="max-height:240px; overflow-y:auto; margin-top:8px; border-radius:8px; border:1px solid #e0e0e0;">
+                <table class="table table-hover" style="margin:0;">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã Phiếu Khám</th>
+                            <th>Loại Bệnh</th>
+                            <th>Ngày Khám</th>
+                        </tr>
+                    </thead>
+                    <tbody id="docModalHistoryTable">
+                        <tr><td colspan="4" class="text-center text-muted">Không có dữ liệu</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; margin-top:20px;">
+                <button class="btn btn-secondary" onclick="closeDoctorPatientModal()">
+                    <i class="bi bi-x-circle"></i> Đóng
+                </button>
+            </div>
+        </div>
+        <div id="doctorPatientModalOverlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:1001;" onclick="closeDoctorPatientModal()"></div>
 
         <!-- 3. MEDICAL EXAMINATION LOOKUP SECTION -->
         <div id="exam-lookup" class="content-section">
@@ -585,12 +645,12 @@
                             <thead>
                                 <tr>
                                     <th style="width: 60px;">STT</th>
-                                    <th>Mã Phiếu Khám</th>
-                                    <th>Họ Tên</th>
-                                    <th>Giới Tính</th>
-                                    <th>Năm Sinh</th>
-                                    <th>Ngày Khám</th>
-                                    <th style="width: 120px;">Hành Động</th>
+                                    <th style="width: 120px;">Mã Phiếu Khám</th>
+                                    <th style="width: 150px;">Họ Tên</th>
+                                    <th style="width: 100px;">Giới Tính</th>
+                                    <th style="width: 100px;">Năm Sinh</th>
+                                    <th style="width: 120px;">Ngày Khám</th>
+                                    <th style="width: 180px;">Hành Động</th>
                                 </tr>
                             </thead>
                             <tbody id="examSearchResults">
@@ -608,7 +668,7 @@
         <div id="exam-form" class="content-section">
             <div class="card">
                 <div class="card-header">
-                    <i class="bi bi-file-earmark-medical"></i> Lập Phiếu Khám Bệnh
+                    <i class="bi bi-file-earmark-medical"></i> Chi Tiết Phiếu Khám Bệnh
                 </div>
                 <div class="card-body">
                     <!-- ADMINISTRATIVE INFORMATION -->
@@ -625,87 +685,74 @@
                             <input type="date" class="form-control" id="examDate">
                         </div>
                         <div class="form-group">
+                            <label class="form-label">Mã Nhân Viên</label>
+                            <input type="text" class="form-control" id="staffId" placeholder="Nhập mã nhân viên">
+                        </div>
+                    </div>
+                    <div class="form-row-2col">
+                        <div class="form-group">
                             <label class="form-label">Họ và Tên</label>
                             <input type="text" class="form-control" id="patientName" placeholder="Nhập họ tên bệnh nhân">
                         </div>
+                        <div class="form-group">
+                            <label class="form-label">CCCD</label>
+                            <input type="text" class="form-control" id="patientCitizen" placeholder="Nhập số CCCD">
+                        </div>
                     </div>
 
-                    <div class="form-row-3col">
+                    <div class="form-row-2col">
+                        <div class="form-group">
+                            <label class="form-label">Địa Chỉ</label>
+                            <input type="text" class="form-control" id="patientAddress" placeholder="Nhập địa chỉ">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ngày Sinh</label>
+                            <input type="date" class="form-control" id="patientBirthDate">
+                        </div>
+                    </div>
+
+                    <div class="form-row-2col">
                         <div class="form-group">
                             <label class="form-label">Giới Tính</label>
                             <select class="form-select" id="patientGender">
-                                <option value="">-- Chọn giới tính --</option>
+                                <option value="">-- Chọn --</option>
                                 <option value="Nam">Nam</option>
                                 <option value="Nữ">Nữ</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label class="form-label">Năm Sinh</label>
-                            <input type="number" class="form-control" id="patientBirth" placeholder="1990" min="1930" max="2020">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Địa Chỉ</label>
-                            <input type="text" class="form-control" id="patientAddress" placeholder="Nhập địa chỉ">
-                        </div>
-                    </div>
-
-                    <!-- VITAL SIGNS -->
-                    <div class="section-divider"></div>
-                    <div class="section-title">
-                        <i class="bi bi-heart-pulse"></i> Dấu Hiệu Sinh Tồn
-                    </div>
-                    <div class="vital-sign-group">
-                        <div class="form-row-3col">
-                            <div class="form-group">
-                                <label class="form-label">Nhịp Tim (lần/phút)</label>
-                                <input type="number" class="form-control" id="heartRate" placeholder="72" min="0">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Nhiệt Độ (°C)</label>
-                                <input type="number" class="form-control" id="temperature" placeholder="36.5" min="0" step="0.1">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Huyết Áp (mmHg)</label>
-                                <input type="text" class="form-control" id="bloodPressure" placeholder="120/80">
-                            </div>
-                        </div>
-                        <div class="form-row-2col">
-                            <div class="form-group">
-                                <label class="form-label">Chiều Cao (cm)</label>
-                                <input type="number" class="form-control" id="height" placeholder="170" min="0">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Cân Nặng (kg)</label>
-                                <input type="number" class="form-control" id="weight" placeholder="70" min="0" step="0.1">
-                            </div>
+                            <label class="form-label">Số Điện Thoại</label>
+                            <input type="text" class="form-control" id="patientPhone" placeholder="Nhập số điện thoại">
                         </div>
                     </div>
 
                     <!-- CLINICAL DIAGNOSIS -->
                     <div class="section-divider"></div>
                     <div class="section-title">
-                        <i class="bi bi-stethoscope"></i> Chẩn Đoán Lâm Sàng
+                        <i class="bi bi-clipboard-pulse"></i> Chẩn Đoán Lâm Sàng
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Triệu Chứng (Symptoms)</label>
-                        <textarea class="form-control" id="symptoms" rows="3" placeholder="Mô tả các triệu chứng của bệnh nhân..."></textarea>
+                    <div class="form-row-2col">
+                        <div class="form-group">
+                            <label class="form-label">Triệu Chứng</label>
+                            <textarea class="form-control" id="symptoms" rows="4" placeholder="Mô tả triệu chứng..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Chẩn Đoán</label>
+                            <textarea class="form-control" id="diagnosis" rows="4" placeholder="Chẩn đoán của bác sĩ..."></textarea>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Chẩn Đoán (Diagnosis)</label>
-                        <textarea class="form-control" id="diagnosis" rows="3" placeholder="Kết quả chẩn đoán..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label">Loại Bệnh (Disease Type)</label>
-                        <select class="form-select" id="diseaseType">
-                            <option value="">-- Chọn loại bệnh --</option>
-                            <option value="B001">Cảm Cúm</option>
-                            <option value="B002">Viêm Phế Quản</option>
-                            <option value="B003">Đau Đầu</option>
-                            <option value="B004">Rối Loạn Tiêu Hóa</option>
-                            <option value="B005">Viêm Tai Mũi Họng</option>
-                        </select>
+                        <label class="form-label">Loại Bệnh</label>
+                        <input type="text"
+                               id="diseaseType"
+                               class="form-control"
+                               list="diseaseTypeList"
+                               placeholder="Gõ tên loại bệnh để tìm hoặc chọn..."
+                               autocomplete="off">
+                        <datalist id="diseaseTypeList">
+                            <!-- Điền động từ API /api/benh khi trang load -->
+                        </datalist>
                     </div>
 
                     <!-- PRESCRIPTION -->
@@ -909,11 +956,15 @@
                         profile: 'Hồ Sơ Cá Nhân',
                         'patient-lookup': 'Tra Cứu Bệnh Nhân',
                         'exam-lookup': 'Tra Cứu Phiếu Khám Bệnh',
-                        'exam-form': 'Lập Phiếu Khám Bệnh',
+                        'exam-form': 'Chi Tiết Phiếu Khám Bệnh',
                         'medicine-lookup': 'Tra Cứu Danh Sách Thuốc',
                         'disease-lookup': 'Tra Cứu Danh Sách Loại Bệnh'
                     };
                     document.getElementById('page-title').textContent = titleMap[sectionId] || 'Trang Chủ';
+                    if (sectionId === 'exam-lookup') loadAllExams();
+                    if (sectionId === 'patient-lookup') loadAllPatients();
+                    if (sectionId === 'medicine-lookup') loadAllMedicines();
+                    if (sectionId === 'disease-lookup') loadAllDiseases();
                 }
             });
         });
@@ -943,6 +994,16 @@
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
             return `${day}/${month}/${year}`;
+        }
+
+        function normalizeSearchText(value) {
+            return String(value || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd')
+                .replace(/Đ/g, 'D')
+                .toLowerCase()
+                .trim();
         }
 
         function mapPositionByMaCV(maCV, roleName) {
@@ -1071,118 +1132,332 @@
 
         window.addEventListener('load', loadProfile);
 
-        // ========== PATIENT SEARCH ==========
-        function searchPatients() {
-            const searchInput = document.getElementById('patientSearchInput').value.toLowerCase();
-            const resultsBody = document.getElementById('patientSearchResults');
-            
-            if (!searchInput) {
-                resultsBody.innerHTML = '<tr><td colspan="6" class="no-results">Nhập thông tin tìm kiếm...</td></tr>';
-                return;
+        // ========== PATIENT LOOKUP (server-backed, using BENHNHAN + PHIEUKHAM) ==========
+        let patientsCache = null;
+        let currentPatientList = null;
+        let currentPatientPage = 1;
+        const PATIENTS_PER_PAGE = 13;
+
+        async function loadAllPatients() {
+            const results = document.getElementById('patientSearchResults');
+            if (!results) return;
+            results.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Đang tải dữ liệu...</td></tr>';
+            try {
+                const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+                const response = await fetch(`${API_BASE_URL}/benh-nhan/full`, {
+                    headers: { Authorization: token ? `Bearer ${token}` : '' }
+                });
+                if (!response.ok) {
+                    results.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Lỗi khi lấy dữ liệu</td></tr>';
+                    return;
+                }
+                const payload = await response.json();
+                patientsCache = payload.data || [];
+                renderPatientRows(patientsCache);
+            } catch (err) {
+                console.error('Error loading patients:', err);
+                results.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Lỗi kết nối</td></tr>';
             }
-
-            const filtered = mockPatients.filter(p => 
-                p.id.toLowerCase().includes(searchInput) || 
-                p.name.toLowerCase().includes(searchInput)
-            );
-
-            if (filtered.length === 0) {
-                resultsBody.innerHTML = '<tr><td colspan="6" class="no-results">Không tìm thấy kết quả</td></tr>';
-                return;
-            }
-
-            resultsBody.innerHTML = filtered.map(p => `
-                <tr>
-                    <td>${p.id}</td>
-                    <td>${p.name}</td>
-                    <td>${p.birth}</td>
-                    <td>${p.gender}</td>
-                    <td>${p.receptionDate}</td>
-                    <td>${p.notes}</td>
-                </tr>
-            `).join('');
         }
 
-        // ========== EXAM SEARCH ==========
-        function searchExams() {
-            const searchInput = document.getElementById('examSearchInput').value.toLowerCase();
-            const resultsBody = document.getElementById('examSearchResults');
-            
-            if (!searchInput) {
-                resultsBody.innerHTML = '<tr><td colspan="7" class="no-results">Nhập thông tin tìm kiếm...</td></tr>';
+        function renderPatientRows(list, page = 1) {
+            const results = document.getElementById('patientSearchResults');
+            const paginationContainer = document.getElementById('patientPagination');
+
+            currentPatientList = list || [];
+            if (!currentPatientList || currentPatientList.length === 0) {
+                results.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Không có dữ liệu</td></tr>';
+                if (paginationContainer) paginationContainer.innerHTML = '';
                 return;
             }
 
-            const filtered = mockExams.filter(e => 
-                e.id.toLowerCase().includes(searchInput) || 
-                e.patientName.toLowerCase().includes(searchInput)
-            );
+            const total = currentPatientList.length;
+            const totalPages = Math.max(1, Math.ceil(total / PATIENTS_PER_PAGE));
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+            currentPatientPage = page;
 
-            if (filtered.length === 0) {
-                resultsBody.innerHTML = '<tr><td colspan="7" class="no-results">Không tìm thấy kết quả</td></tr>';
+            const start = (page - 1) * PATIENTS_PER_PAGE;
+            const end = start + PATIENTS_PER_PAGE;
+            const pageItems = currentPatientList.slice(start, end);
+
+            results.innerHTML = pageItems.map(p => {
+                const birthYear = p.NgaySinh ? new Date(p.NgaySinh).getFullYear() : '-';
+                return `
+                    <tr>
+                        <td>${p.MaBN}</td>
+                        <td>${p.TenBN || '-'}</td>
+                        <td>${birthYear}</td>
+                        <td><span class="badge ${p.GioiTinh === 'Nam' ? 'bg-primary' : 'bg-info'}">${p.GioiTinh || '-'}</span></td>
+                        <td>${p.NgayTiepNhan || '-'}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" onclick="viewDoctorPatientDetail('${p.MaBN}')">
+                                <i class="bi bi-eye"></i> Xem chi tiết
+                            </button>
+                        </td>
+                    </tr>`;
+            }).join('');
+
+            // render pagination controls using existing helper
+            paginationContainer.innerHTML = renderPaginationControls(totalPages, currentPatientPage, (p) => renderPatientRows(currentPatientList, p), 'patientPagination');
+        }
+
+        async function searchPatients() {
+            const q = (document.getElementById('patientSearchInput').value || '').trim();
+            const keyword = normalizeSearchText(q);
+            const results = document.getElementById('patientSearchResults');
+            if (!results) return;
+
+            if (!keyword) {
+                if (!patientsCache) await loadAllPatients();
+                else renderPatientRows(patientsCache);
                 return;
             }
 
-            resultsBody.innerHTML = filtered.map((e, idx) => `
+            if (!patientsCache) await loadAllPatients();
+            const filtered = (patientsCache || []).filter(p => {
+                const name = normalizeSearchText(p.TenBN);
+                const ma = normalizeSearchText(p.MaBN);
+                return name.includes(keyword) || ma.includes(keyword);
+            });
+            if (!filtered || filtered.length === 0) {
+                results.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Không tìm thấy kết quả</td></tr>';
+                return;
+            }
+            renderPatientRows(filtered);
+        }
+
+        // ========== EXAM SEARCH / LOAD FROM API ==========
+        let examsCache = null;
+        let currentExamList = null;
+        const EXAMS_PER_PAGE = 13;
+
+        async function loadAllExams() {
+            const results = document.getElementById('examSearchResults');
+            results.innerHTML = '<tr><td colspan="7" class="no-results">Đang tải dữ liệu...</td></tr>';
+            try {
+                const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+                const resp = await fetch(`${API_BASE_URL}/phieu-kham`, {
+                    headers: { Authorization: token ? `Bearer ${token}` : '' }
+                });
+                if (!resp.ok) {
+                    results.innerHTML = '<tr><td colspan="7" class="no-results">Lỗi khi lấy dữ liệu</td></tr>';
+                    return;
+                }
+                const pl = await resp.json();
+                examsCache = pl.data || [];
+                renderExamRows(examsCache);
+            } catch (err) {
+                console.error('Load exams error', err);
+                results.innerHTML = '<tr><td colspan="7" class="no-results">Lỗi kết nối</td></tr>';
+            }
+        }
+
+        function renderExamRows(list, page = 1) {
+            const results = document.getElementById('examSearchResults');
+            const paginationContainerId = 'examPagination';
+            let paginationContainer = document.getElementById(paginationContainerId);
+            if (!paginationContainer) {
+                paginationContainer = document.createElement('div');
+                paginationContainer.id = paginationContainerId;
+                paginationContainer.style.display = 'flex';
+                paginationContainer.style.justifyContent = 'center';
+                paginationContainer.style.marginTop = '12px';
+                const cardBody = document.querySelector('#exam-lookup .card-body');
+                if (cardBody) cardBody.appendChild(paginationContainer);
+            }
+
+            currentExamList = list || [];
+            if (!currentExamList || currentExamList.length === 0) {
+                results.innerHTML = '<tr><td colspan="7" class="no-results">Không có dữ liệu</td></tr>';
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            const total = currentExamList.length;
+            const totalPages = Math.max(1, Math.ceil(total / EXAMS_PER_PAGE));
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+
+            const start = (page - 1) * EXAMS_PER_PAGE;
+            const end = start + EXAMS_PER_PAGE;
+            const pageItems = currentExamList.slice(start, end);
+
+            results.innerHTML = pageItems.map((e, idx) => `
                 <tr>
-                    <td>${idx + 1}</td>
-                    <td>${e.id}</td>
-                    <td>${e.patientName}</td>
-                    <td>${e.gender}</td>
-                    <td>${e.birth}</td>
-                    <td>${e.examDate}</td>
+                    <td>${start + idx + 1}</td>
+                    <td>${e.MaPK}</td>
+                    <td>${e.TenBN || '-'}</td>
+                    <td><span class="badge ${e.GioiTinh === 'Nam' ? 'bg-primary' : 'bg-info'}">${e.GioiTinh || '-'}</span></td>
+                    <td>${formatDate(e.NgaySinh) || '-'}</td>
+                    <td>${formatDate(e.NgayTiepNhan || e.NgayKham) || '-'}</td>
                     <td>
-                        <button class="btn btn-info btn-sm" onclick="startTreatment('${e.id}', '${e.patientName}', '${e.gender}', ${e.birth})">
-                            <i class="bi bi-stethoscope"></i> Khám bệnh
-                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="viewExamDetail('${e.MaPK}')">Xem chi tiết</button>
+                        <button class="btn btn-danger btn-sm" style="margin-left:8px;" onclick="deleteExam('${e.MaPK}')">Xóa</button>
                     </td>
                 </tr>
             `).join('');
+
+            paginationContainer.innerHTML = renderExamPagination(totalPages, page);
         }
 
-        // ========== START TREATMENT FUNCTION ==========
-        function startTreatment(examId, patientName, gender, birthYear) {
-            // Store selected exam data
-            appState.selectedExamForTreatment = {
-                id: examId,
-                patientName: patientName,
-                gender: gender,
-                birthYear: birthYear
-            };
+        function renderExamPagination(totalPages, currentPage) {
+            const parts = [];
+            function pageButton(n, label, active = false) {
+                return `<button class="page-btn" data-page="${n}" style="margin:0 6px; padding:8px 12px; border-radius:6px; border:1px solid #ccc; background:${active ? '#e74c3c' : 'white'}; color:${active ? 'white' : '#333'};">${label}</button>`;
+            }
 
-            // Pre-fill the form with patient information
-            document.getElementById('examId').value = examId;
-            document.getElementById('patientName').value = patientName;
-            document.getElementById('patientGender').value = gender;
-            document.getElementById('patientBirth').value = birthYear;
+            parts.push(`<button class="page-nav" data-page="${Math.max(1, currentPage-1)}" style="margin:0 8px;">&larr;</button>`);
 
-            // Set today's date
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('examDate').value = today;
+            if (totalPages <= 7) {
+                for (let i=1;i<=totalPages;i++) parts.push(pageButton(i,i, i===currentPage));
+            } else {
+                if (currentPage <= 4) {
+                    for (let i=1;i<=5;i++) parts.push(pageButton(i,i, i===currentPage));
+                    parts.push('<span style="margin:0 6px">..</span>');
+                    parts.push(pageButton(totalPages, totalPages));
+                } else if (currentPage >= totalPages - 3) {
+                    parts.push(pageButton(1,1));
+                    parts.push('<span style="margin:0 6px">..</span>');
+                    for (let i=totalPages-4;i<=totalPages;i++) parts.push(pageButton(i,i, i===currentPage));
+                } else {
+                    parts.push(pageButton(1,1));
+                    parts.push('<span style="margin:0 6px">..</span>');
+                    parts.push(pageButton(currentPage-1, currentPage-1));
+                    parts.push(pageButton(currentPage, currentPage, true));
+                    parts.push(pageButton(currentPage+1, currentPage+1));
+                    parts.push('<span style="margin:0 6px">..</span>');
+                    parts.push(pageButton(totalPages, totalPages));
+                }
+            }
 
-            // Clear clinical data
-            document.getElementById('symptoms').value = '';
-            document.getElementById('diagnosis').value = '';
-            document.getElementById('diseaseType').value = '';
+            parts.push(`<button class="page-nav" data-page="${Math.min(totalPages, currentPage+1)}" style="margin:0 8px;">&rarr;</button>`);
 
-            // Clear prescription items
-            appState.prescriptionItems = [];
-            renderPrescriptionTable();
+            setTimeout(() => {
+                const container = document.getElementById('examPagination');
+                if (!container) return;
+                container.querySelectorAll('.page-btn, .page-nav').forEach(btn => {
+                    btn.onclick = () => {
+                        const p = parseInt(btn.getAttribute('data-page'),10);
+                        if (!isNaN(p)) renderExamRows(currentExamList, p);
+                    };
+                });
+            }, 0);
 
-            // Switch to exam form section
-            document.querySelectorAll('.content-section').forEach(section => {
-                section.classList.remove('active');
+            return parts.join('');
+        }
+
+        function deleteExam(maPK) {
+            if (!confirm(`Xóa phiếu khám ${maPK}?`)) return;
+            // No backend delete endpoint available; remove locally from cache for now
+            if (examsCache) {
+                examsCache = examsCache.filter(e => e.MaPK != maPK);
+                renderExamRows(examsCache, 1);
+            }
+        }
+
+        function searchExams() {
+            const q = normalizeSearchText(document.getElementById('examSearchInput').value);
+            if (!examsCache) {
+                loadAllExams();
+                return;
+            }
+            if (!q) {
+                renderExamRows(examsCache);
+                return;
+            }
+            const filtered = (examsCache || []).filter(e => {
+                const ma = normalizeSearchText(e.MaPK);
+                const name = normalizeSearchText(e.TenBN);
+                return ma.includes(q) || name.includes(q);
             });
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
+            if (!filtered || filtered.length === 0) {
+                const results = document.getElementById('examSearchResults');
+                results.innerHTML = '<tr><td colspan="7" class="no-results">Không tìm thấy kết quả</td></tr>';
+                return;
+            }
+            renderExamRows(filtered);
+        }
 
-            document.getElementById('exam-form').classList.add('active');
-            document.querySelector('[data-section="exam-form"]').classList.add('active');
-            document.getElementById('page-title').textContent = 'Lập Phiếu Khám Bệnh';
+        async function viewExamDetail(maPK) {
+            try {
+                if (!examsCache) await loadAllExams();
+                const exam = (examsCache || []).find(x => x.MaPK == maPK);
+                if (!exam) {
+                    alert('Không tìm thấy phiếu khám');
+                    return;
+                }
 
-            // Scroll to top
-            window.scrollTo(0, 0);
+                // switch to exam form
+                document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                const nav = document.querySelector('[data-section="exam-form"]'); if (nav) nav.classList.add('active');
+                const section = document.getElementById('exam-form'); if (section) section.classList.add('active');
+                document.getElementById('page-title').textContent = 'Chi Tiết Phiếu Khám Bệnh';
+
+                // fill fields
+                const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ''; };
+                setVal('examId', exam.MaPK);
+                setVal('examDate', formatDateForInput(exam.NgayKham));
+                setVal('staffId', exam.MaNV || exam.MaNhanVien || '');
+                setVal('patientName', exam.TenBN || '');
+                setVal('patientCitizen', exam.CCCD || exam.CMND || '');
+                setVal('patientAddress', exam.DiaChi || '');
+                setVal('patientBirthDate', formatDateForInput(exam.NgaySinh));
+                const genderEl = document.getElementById('patientGender'); if (genderEl) genderEl.value = exam.GioiTinh || '';
+                setVal('patientPhone', exam.SDT || exam.SoDienThoai || '');
+
+                // fetch diseases for MaPK
+                try {
+                    const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+                    const resp = await fetch(`${API_BASE_URL}/phieu-kham/${encodeURIComponent(exam.MaPK)}/details`, {
+                        headers: { Authorization: token ? `Bearer ${token}` : '' }
+                    });
+                    if (resp.ok) {
+                        const pl = await resp.json();
+                        const rows = pl.data || [];
+                        const diseases = rows.map(r => r.TenBenh).filter(Boolean).join(', ');
+                        const symptoms = rows.map(r => r.TrieuChung).filter(Boolean).join('; ');
+                        setVal('diseaseType', diseases);
+                        setVal('symptoms', symptoms);
+                    }
+                } catch (err) { console.warn('Failed to load diseases', err); }
+
+                // fetch prescriptions
+                try {
+                    const token2 = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+                    const pres = await fetch(`${API_BASE_URL}/phieu-kham/${encodeURIComponent(exam.MaPK)}/prescriptions`, {
+                        headers: { Authorization: token2 ? `Bearer ${token2}` : '' }
+                    });
+                    if (pres.ok) {
+                        const pl2 = await pres.json();
+                        const items = pl2.data || [];
+                        // map to appState.prescriptionItems format
+                        appState.prescriptionItems = (items || []).map(it => ({
+                            medicineName: it.TenThuoc || it.MaThuoc || '',
+                            unit: it.DonVi || it.TenDVT || '',
+                            quantity: parseInt(it.SoLuongThuoc || it.SoLuong || 1, 10) || 1,
+                            usage: it.CachDung || ''
+                        }));
+                        renderPrescriptionTable();
+                    }
+                } catch (err) { console.warn('Failed to load prescriptions', err); }
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (err) {
+                console.error('viewExamDetail error', err);
+                alert('Lỗi khi tải chi tiết phiếu khám');
+            }
+        }
+
+        function formatDateForInput(value) {
+            if (!value) return '';
+            const d = new Date(value);
+            if (Number.isNaN(d.getTime())) return '';
+            const yy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yy}-${mm}-${dd}`;
         }
 
         // ========== PRESCRIPTION MANAGEMENT ==========
@@ -1270,25 +1545,74 @@
                 return;
             }
 
-            alert(`Phiếu khám cho bệnh nhân ${patientName} đã được lưu thành công!`);
-            clearExamForm();
+            // Build payload
+            const symptoms = document.getElementById('symptoms').value;
+            const diseaseText = (document.getElementById('diseaseType')?.value || '').trim();
+            const diseases = [];
+            if (diseaseText) {
+                diseases.push({ TenBenh: diseaseText, TrieuChung: symptoms, GhiChu: diagnosis });
+            }
+
+            const prescriptions = appState.prescriptionItems.map(it => ({
+                TenThuoc: it.medicineName,
+                SoLuongThuoc: it.quantity,
+                CachDung: it.usage
+            }));
+
+            const payload = {
+                symptoms,
+                diagnosis,
+                diseases,
+                prescriptions
+            };
+
+            // Send to backend
+            (async () => {
+                try {
+                    const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+                    const resp = await fetch(`${API_BASE_URL}/phieu-kham/${encodeURIComponent(examId)}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: token ? `Bearer ${token}` : ''
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!resp.ok) {
+                        const err = await resp.json().catch(() => ({}));
+                        alert('Lưu phiếu khám thất bại: ' + (err.message || resp.statusText));
+                        return;
+                    }
+
+                    const pl = await resp.json();
+                    alert(pl.message || 'Lưu phiếu khám thành công');
+                    // refresh exam list and form
+                    await loadAllExams();
+                    clearExamForm();
+                } catch (err) {
+                    console.error('Save exam error', err);
+                    // Try to show a helpful message
+                    const msg = (err && err.message) ? err.message : (typeof err === 'string' ? err : 'Lỗi khi lưu phiếu khám');
+                    alert('Lỗi khi lưu phiếu khám: ' + msg);
+                }
+            })();
         }
 
         function clearExamForm() {
-            document.getElementById('examId').value = '';
-            document.getElementById('examDate').value = '';
-            document.getElementById('patientName').value = '';
-            document.getElementById('patientGender').value = '';
-            document.getElementById('patientBirth').value = '';
-            document.getElementById('patientAddress').value = '';
-            document.getElementById('heartRate').value = '';
-            document.getElementById('temperature').value = '';
-            document.getElementById('bloodPressure').value = '';
-            document.getElementById('height').value = '';
-            document.getElementById('weight').value = '';
-            document.getElementById('symptoms').value = '';
-            document.getElementById('diagnosis').value = '';
-            document.getElementById('diseaseType').value = '';
+            const setIf = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+            setIf('examId', '');
+            setIf('examDate', '');
+            setIf('staffId', '');
+            setIf('patientName', '');
+            setIf('patientGender', '');
+            setIf('patientBirthDate', '');
+            setIf('patientCitizen', '');
+            setIf('patientAddress', '');
+            setIf('patientPhone', '');
+            setIf('symptoms', '');
+            setIf('diagnosis', '');
+            setIf('diseaseType', '');
             
             appState.prescriptionItems = [];
             renderPrescriptionTable();
@@ -1334,65 +1658,261 @@ Ngày in: ${new Date().toLocaleDateString('vi-VN')}
             window.print();
         }
 
-        // ========== MEDICINE SEARCH ==========
-        function searchMedicines() {
-            const searchInput = document.getElementById('medicineSearchInput').value.toLowerCase();
-            const resultsBody = document.getElementById('medicineSearchResults');
-            
-            if (!searchInput) {
-                resultsBody.innerHTML = '<tr><td colspan="5" class="no-results">Nhập thông tin tìm kiếm...</td></tr>';
-                return;
+        // ========== MEDICINE LOOKUP (server-backed, same as receptionist) ==========
+        let medicinesCache = null;
+        let currentMedicineList = null;
+        let currentMedicinePage = 1;
+        const MEDICINES_PER_PAGE = 13;
+
+        async function loadAllMedicines() {
+            const results = document.getElementById('medicineSearchResults');
+            if (!results) return;
+            results.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Đang tải dữ liệu...</td></tr>';
+            try {
+                const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+                const resp = await fetch(`${API_BASE_URL}/thuoc`, {
+                    headers: { Authorization: token ? `Bearer ${token}` : '' }
+                });
+                if (!resp.ok) {
+                    results.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Lỗi khi lấy dữ liệu</td></tr>';
+                    return;
+                }
+                const payload = await resp.json();
+                medicinesCache = payload.data || [];
+                renderMedicineRows(medicinesCache);
+            } catch (err) {
+                console.error('Error loading medicines:', err);
+                results.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Lỗi kết nối</td></tr>';
             }
-
-            const filtered = mockMedicines.filter(m => 
-                m.name.toLowerCase().includes(searchInput)
-            );
-
-            if (filtered.length === 0) {
-                resultsBody.innerHTML = '<tr><td colspan="5" class="no-results">Không tìm thấy kết quả</td></tr>';
-                return;
-            }
-
-            const usageMap = { '1': '1 lần/ngày', '2': '2 lần/ngày', '3': '3 lần/ngày', '4': '4 lần/ngày' };
-
-            resultsBody.innerHTML = filtered.map(m => `
-                <tr>
-                    <td>${m.name}</td>
-                    <td>${m.unit}</td>
-                    <td>${m.qty}</td>
-                    <td>${m.price.toLocaleString()} VND</td>
-                    <td>${usageMap[m.usage]}</td>
-                </tr>
-            `).join('');
         }
 
-        // ========== DISEASE SEARCH ==========
-        function searchDiseases() {
-            const searchInput = document.getElementById('diseaseSearchInput').value.toLowerCase();
-            const resultsBody = document.getElementById('diseaseSearchResults');
-            
-            if (!searchInput) {
-                resultsBody.innerHTML = '<tr><td colspan="3" class="no-results">Nhập thông tin tìm kiếm...</td></tr>';
+        function renderMedicineRows(list, page = 1) {
+            const results = document.getElementById('medicineSearchResults');
+            if (!results) return;
+            const paginationContainerId = 'medicinePagination';
+            let paginationContainer = document.getElementById(paginationContainerId);
+            if (!paginationContainer) {
+                paginationContainer = document.createElement('div');
+                paginationContainer.id = paginationContainerId;
+                paginationContainer.style.display = 'flex';
+                paginationContainer.style.justifyContent = 'center';
+                paginationContainer.style.marginTop = '12px';
+                const cardBody = document.querySelector('#medicine-lookup .card-body');
+                if (cardBody) cardBody.appendChild(paginationContainer);
+            }
+
+            currentMedicineList = list || [];
+            if (!currentMedicineList || currentMedicineList.length === 0) {
+                results.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Không có dữ liệu</td></tr>';
+                paginationContainer.innerHTML = '';
                 return;
             }
 
-            const filtered = mockDiseases.filter(d => 
-                d.id.toLowerCase().includes(searchInput) || 
-                d.name.toLowerCase().includes(searchInput)
-            );
+            const total = currentMedicineList.length;
+            const totalPages = Math.max(1, Math.ceil(total / MEDICINES_PER_PAGE));
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+            currentMedicinePage = page;
 
-            if (filtered.length === 0) {
-                resultsBody.innerHTML = '<tr><td colspan="3" class="no-results">Không tìm thấy kết quả</td></tr>';
-                return;
-            }
+            const start = (page - 1) * MEDICINES_PER_PAGE;
+            const end = start + MEDICINES_PER_PAGE;
+            const pageItems = currentMedicineList.slice(start, end);
 
-            resultsBody.innerHTML = filtered.map(d => `
+            results.innerHTML = pageItems.map(m => `
                 <tr>
-                    <td>${d.id}</td>
-                    <td>${d.name}</td>
-                    <td>${d.desc}</td>
+                    <td>${m.TenThuoc || '-'}</td>
+                    <td>${m.TenDVT || m.MaDVT || '-'}</td>
+                    <td>${m.SoLuongTon != null ? m.SoLuongTon : '-'}</td>
+                    <td>${(m.DonGiaBan != null) ? Number(m.DonGiaBan).toLocaleString('vi-VN') : '-'}</td>
+                    <td>${m.MoTaCachDung || '-'}</td>
                 </tr>
             `).join('');
+
+            paginationContainer.innerHTML = renderPaginationControls(totalPages, currentMedicinePage, (p) => renderMedicineRows(currentMedicineList, p), 'medicinePagination');
+        }
+
+        function renderPaginationControls(totalPages, currentPage, onPage, containerId = 'medicinePagination') {
+            const parts = [];
+            function pageButton(n, label, active = false) { return `<button class="page-btn" data-page="${n}" style="margin:0 6px; padding:8px 12px; border-radius:6px; border:1px solid #ccc; background:${active ? '#e74c3c' : 'white'}; color:${active ? 'white' : '#333'};">${label}</button>`; }
+            parts.push(`<button class="page-nav" data-page="${Math.max(1, currentPage-1)}" style="margin:0 8px;">&larr;</button>`);
+            if (totalPages <= 7) {
+                for (let i=1;i<=totalPages;i++) parts.push(pageButton(i,i, i===currentPage));
+            } else {
+                if (currentPage <= 4) {
+                    for (let i=1;i<=5;i++) parts.push(pageButton(i,i, i===currentPage));
+                    parts.push('<span style="margin:0 6px">..</span>');
+                    parts.push(pageButton(totalPages, totalPages));
+                } else if (currentPage >= totalPages - 3) {
+                    parts.push(pageButton(1,1));
+                    parts.push('<span style="margin:0 6px">..</span>');
+                    for (let i=totalPages-4;i<=totalPages;i++) parts.push(pageButton(i,i, i===currentPage));
+                } else {
+                    parts.push(pageButton(1,1));
+                    parts.push('<span style="margin:0 6px">..</span>');
+                    parts.push(pageButton(currentPage-1, currentPage-1));
+                    parts.push(pageButton(currentPage, currentPage, true));
+                    parts.push(pageButton(currentPage+1, currentPage+1));
+                    parts.push('<span style="margin:0 6px">..</span>');
+                    parts.push(pageButton(totalPages, totalPages));
+                }
+            }
+            parts.push(`<button class="page-nav" data-page="${Math.min(totalPages, currentPage+1)}" style="margin:0 8px;">&rarr;</button>`);
+
+            setTimeout(() => {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                container.querySelectorAll('.page-btn, .page-nav').forEach(btn => {
+                    btn.onclick = () => {
+                        const p = parseInt(btn.getAttribute('data-page'),10);
+                        if (!isNaN(p) && typeof onPage === 'function') onPage(p);
+                    };
+                });
+            }, 0);
+
+            return parts.join('');
+        }
+
+        async function searchMedicines() {
+            const q = (document.getElementById('medicineSearchInput').value || '').trim();
+            const keyword = normalizeSearchText(q);
+            const results = document.getElementById('medicineSearchResults');
+            if (!results) return;
+
+            if (!keyword) {
+                if (!medicinesCache) await loadAllMedicines();
+                else renderMedicineRows(medicinesCache);
+                return;
+            }
+
+            if (!medicinesCache) await loadAllMedicines();
+            const items = (medicinesCache || []).filter(m =>
+                normalizeSearchText(m.TenThuoc).includes(keyword) ||
+                normalizeSearchText(m.TenDVT).includes(keyword) ||
+                normalizeSearchText(m.MoTaCachDung).includes(keyword) ||
+                normalizeSearchText(m.MaThuoc).includes(keyword)
+            );
+            if (items.length === 0) {
+                results.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Không tìm thấy kết quả</td></tr>';
+                return;
+            }
+            renderMedicineRows(items);
+        }
+
+        // ========== DISEASE LOOKUP (LOAIBENH) - server backed like receptionist ==========
+        let diseasesCache = null;
+        let currentDiseaseList = null;
+        let currentDiseasePage = 1;
+        const DISEASES_PER_PAGE = 13;
+
+        async function loadAllDiseases() {
+            const results = document.getElementById('diseaseSearchResults');
+            if (!results) return;
+            results.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Đang tải dữ liệu...</td></tr>';
+            try {
+                const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+                const resp = await fetch(`${API_BASE_URL}/benh`, {
+                    headers: { Authorization: token ? `Bearer ${token}` : '' }
+                });
+                if (!resp.ok) {
+                    results.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Lỗi khi lấy dữ liệu</td></tr>';
+                    return;
+                }
+                const payload = await resp.json();
+                diseasesCache = payload.data || [];
+                renderDiseaseRows(diseasesCache);
+            } catch (err) {
+                console.error('Error loading diseases:', err);
+                results.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Lỗi kết nối</td></tr>';
+            }
+        }
+
+        function renderDiseaseRows(list, page = 1) {
+            const results = document.getElementById('diseaseSearchResults');
+            if (!results) return;
+            const paginationContainerId = 'diseasePagination';
+            let paginationContainer = document.getElementById(paginationContainerId);
+            if (!paginationContainer) {
+                paginationContainer = document.createElement('div');
+                paginationContainer.id = paginationContainerId;
+                paginationContainer.style.display = 'flex';
+                paginationContainer.style.justifyContent = 'center';
+                paginationContainer.style.marginTop = '12px';
+                const cardBody = document.querySelector('#disease-lookup .card-body');
+                if (cardBody) cardBody.appendChild(paginationContainer);
+            }
+
+            currentDiseaseList = [...(list || [])].sort((a, b) => (a.MaLoaiBenh || 0) - (b.MaLoaiBenh || 0));
+            if (!currentDiseaseList || currentDiseaseList.length === 0) {
+                results.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Không có dữ liệu</td></tr>';
+                paginationContainer.innerHTML = '';
+                return;
+            }
+
+            const total = currentDiseaseList.length;
+            const totalPages = Math.max(1, Math.ceil(total / DISEASES_PER_PAGE));
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+            currentDiseasePage = page;
+
+            const start = (page - 1) * DISEASES_PER_PAGE;
+            const end = start + DISEASES_PER_PAGE;
+            const pageItems = currentDiseaseList.slice(start, end);
+
+            results.innerHTML = pageItems.map(d => `
+                <tr>
+                    <td>${d.MaLoaiBenh}</td>
+                    <td>${d.TenLoaiBenh || d.TenBenh || d.name || '-'}</td>
+                    <td>${d.MoTa || d.MoTaTrieuChung || '-'}</td>
+                </tr>
+            `).join('');
+
+            paginationContainer.innerHTML = renderPaginationControls(Math.max(1, Math.ceil((currentDiseaseList.length||0)/DISEASES_PER_PAGE)), currentDiseasePage, (p) => renderDiseaseRows(currentDiseaseList, p), 'diseasePagination');
+        }
+
+        async function searchDiseases() {
+            const q = (document.getElementById('diseaseSearchInput').value || '').trim();
+            const keyword = normalizeSearchText(q);
+            const results = document.getElementById('diseaseSearchResults');
+            if (!results) return;
+
+            if (!keyword) {
+                if (!diseasesCache) await loadAllDiseases();
+                else renderDiseaseRows(diseasesCache);
+                return;
+            }
+
+            // client-side filter using cached list for responsiveness
+            if (!diseasesCache) await loadAllDiseases();
+            const filtered = (diseasesCache || []).filter(d =>
+                normalizeSearchText(d.TenLoaiBenh || d.TenBenh || d.name).includes(keyword) ||
+                normalizeSearchText(d.MoTa || d.MoTaTrieuChung).includes(keyword) ||
+                normalizeSearchText(d.MaLoaiBenh).includes(keyword)
+            );
+            if (!filtered || filtered.length === 0) {
+                results.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Không tìm thấy kết quả</td></tr>';
+                return;
+            }
+            renderDiseaseRows(filtered);
+        }
+
+        // ========== LOAD LOẠI BỆNH TỪ DATABASE ==========
+        async function loadDiseaseOptions() {
+            try {
+                const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+                const resp = await fetch(`${API_BASE_URL}/benh`, {
+                    headers: { Authorization: token ? `Bearer ${token}` : '' }
+                });
+                if (!resp.ok) return;
+                const payload = await resp.json();
+                const list = (payload.data || []).sort((a, b) => a.MaLoaiBenh - b.MaLoaiBenh);
+                const datalist = document.getElementById('diseaseTypeList');
+                if (!datalist) return;
+                datalist.innerHTML = list.map(d =>
+                    `<option value="${d.TenLoaiBenh || d.TenBenh || d.name || ''}">${d.TenLoaiBenh || d.TenBenh || d.name || ''}</option>`
+                ).join('');
+            } catch (err) {
+                console.warn('Không thể tải danh sách loại bệnh:', err);
+            }
         }
 
         // Initialize prescription table on page load
@@ -1401,7 +1921,83 @@ Ngày in: ${new Date().toLocaleDateString('vi-VN')}
             // Set today's date as default
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('examDate').value = today;
+            // Load danh sách loại bệnh từ DB
+            loadDiseaseOptions();
         });
+
+        // ========== XEM HỒ SƠ BỆNH NHÂN (DOCTOR MODAL) ==========
+        async function viewDoctorPatientDetail(maBN) {
+            try {
+                // Lấy CCCD từ cache hoặc gọi API riêng
+                let cccd = null;
+                if (patientsCache) {
+                    const found = patientsCache.find(p => String(p.MaBN) === String(maBN));
+                    cccd = found && found.CCCD;
+                }
+                if (!cccd) {
+                    const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+                    const resp = await fetch(`${API_BASE_URL}/benh-nhan`, {
+                        headers: { Authorization: token ? `Bearer ${token}` : '' }
+                    });
+                    if (resp.ok) {
+                        const pl = await resp.json();
+                        const found = (pl.data || []).find(f => String(f.MaBN) === String(maBN));
+                        cccd = found && found.CCCD;
+                    }
+                }
+                if (!cccd) { alert('Không tìm thấy CCCD của bệnh nhân này.'); return; }
+
+                const token = sessionStorage.getItem('auth_token') || localStorage.getItem('auth_token');
+                const resp = await fetch(`${API_BASE_URL}/benh-nhan/by-cccd/${encodeURIComponent(cccd)}?years=5`, {
+                    headers: { Authorization: token ? `Bearer ${token}` : '' }
+                });
+                if (!resp.ok) { alert('Lỗi khi lấy dữ liệu bệnh nhân.'); return; }
+
+                const payload = await resp.json();
+                const data = payload.data || {};
+                const profile = data.profile || {};
+                const history = data.history || [];
+
+                // Điền thông tin hồ sơ vào modal
+                const setTxt = (id, val) => {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = val || '—';
+                };
+                setTxt('docModalTenBN', profile.TenBN);
+                setTxt('docModalNgaySinh', profile.NgaySinh ? formatDate(profile.NgaySinh) : null);
+                setTxt('docModalGioiTinh', profile.GioiTinh);
+                setTxt('docModalCCCD', profile.CCCD);
+                setTxt('docModalSDT', profile.SDT);
+                setTxt('docModalDiaChi', profile.DiaChi);
+
+                // Điền lịch sử khám
+                const histTbody = document.getElementById('docModalHistoryTable');
+                if (!history || history.length === 0) {
+                    histTbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted" style="padding:16px;">Không có lịch sử khám trong 5 năm gần đây</td></tr>';
+                } else {
+                    histTbody.innerHTML = history.map((h, idx) => `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td><strong>${h.MaPK}</strong></td>
+                            <td>${h.TenBenh || '-'}</td>
+                            <td>${h.NgayKham || '-'}</td>
+                        </tr>`).join('');
+                }
+
+                // Hiện modal + overlay
+                document.getElementById('doctorPatientModal').style.display = 'block';
+                document.getElementById('doctorPatientModalOverlay').style.display = 'block';
+            } catch (err) {
+                console.error('viewDoctorPatientDetail error:', err);
+                alert('Lỗi kết nối: ' + err.message);
+            }
+        }
+
+        function closeDoctorPatientModal() {
+            document.getElementById('doctorPatientModal').style.display = 'none';
+            document.getElementById('doctorPatientModalOverlay').style.display = 'none';
+        }
+
     </script>
 </body>
 </html>

@@ -420,6 +420,42 @@
             font-size: 16px;
         }
 
+        #medicine-search .search-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #medicine-search .search-box input {
+            flex: 1;
+        }
+
+        #medicine-search .btn {
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        #medicine-search .table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-weight: 700;
+            padding: 15px;
+        }
+
+        #medicine-search .table tbody td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+
+        #medicine-search .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
         #disease-search .search-box {
             display: flex;
             gap: 10px;
@@ -649,6 +685,7 @@
             <li><a href="#" onclick="switchTab(event, 'profile')" class="active"><i class="bi bi-person-circle"></i> Hồ Sơ Cá Nhân</a></li>
             <li><a href="#" onclick="switchTab(event, 'medical-record-search')"><i class="fas fa-clipboard-list"></i> Tra Cứu Phiếu Khám</a></li>
             <li><a href="#" onclick="switchTab(event, 'patient-search')"><i class="fas fa-users"></i> Tra Cứu Bệnh Nhân</a></li>
+            <li><a href="#" onclick="switchTab(event, 'medicine-search')"><i class="fas fa-capsule"></i> Tra Cứu Danh Sách Thuốc</a></li>
             <li><a href="#" onclick="switchTab(event, 'disease-search')"><i class="fas fa-virus-covid"></i> Tra Cứu Danh Sách Loại Bệnh</a></li>
             <li><a href="#" onclick="switchTab(event, 'import-receipt-search')"><i class="no-icon"></i>Tra Cứu Phiếu Nhập Thuốc</a></li>
             <li><a href="#" onclick="switchTab(event, 'daily-exam')"><i class="fas fa-calendar-check"></i> Tra Cứu Danh Sách Khám Bệnh Theo Ngày</a></li>
@@ -812,6 +849,79 @@
                             <button class="btn btn-primary" onclick="printImportReceipt()"><i class="bi bi-printer"></i> In Phiếu Nhập Thuốc</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medicine Search -->
+        <div id="medicine-search" class="content-section">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-capsule"></i> Tra Cứu Danh Sách Thuốc
+                </div>
+                <div class="card-body">
+                    <div class="search-box" style="display:flex; gap:10px; align-items:center;">
+                        <input type="text" class="form-control" id="medicineSearchInput" placeholder="Tìm kiếm theo Tên Thuốc..." onkeyup="searchMedicines()">
+                        <button class="btn btn-primary" onclick="searchMedicines()"><i class="bi bi-search"></i> Tìm Kiếm</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Tên Thuốc</th>
+                                    <th>Đơn Vị Tính</th>
+                                    <th>Số Lượng Tồn</th>
+                                    <th>Giá Tiền (VND)</th>
+                                    <th>Cách Dùng</th>
+                                    <th style="width:140px; text-align:center;">Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="medicineSearchResults">
+                                <tr>
+                                    <td colspan="6" class="no-results">Nhập thông tin tìm kiếm...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="medicinePagination" style="display:flex; justify-content:center; margin-top:12px;"></div>
+                </div>
+            </div>
+
+            <!-- Edit Medicine Modal -->
+            <div id="editMedicineOverlay" onclick="closeEditMedicineModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000;"></div>
+            <div id="editMedicineModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:520px; max-width:95vw; background:white; padding:28px; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.2); z-index:1001;">
+                <h5 style="color:#1f3a93; font-weight:700; margin-bottom:20px;"><i class="bi bi-pencil-square"></i> Chỉnh Sửa Thuốc</h5>
+                <input type="hidden" id="editMedicineMaThuoc">
+                <div class="form-group">
+                    <label class="form-label required">Tên Thuốc</label>
+                    <input type="text" id="editMedicineTenThuoc" class="form-control" placeholder="Tên thuốc">
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                    <div class="form-group">
+                        <label class="form-label">Đơn Vị Tính</label>
+                        <select id="editMedicineDVT" class="form-control">
+                            <option value="">-- Chọn đơn vị tính --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Số Lượng Tồn</label>
+                        <input type="number" id="editMedicineSoLuong" class="form-control" min="0" placeholder="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Giá Tiền (VND)</label>
+                    <input type="number" id="editMedicineGia" class="form-control" min="0" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Cách Dùng</label>
+                    <select id="editMedicineCachDung" class="form-control">
+                        <option value="">-- Chọn cách dùng --</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
+                    <button class="btn btn-secondary" onclick="closeEditMedicineModal()">Hủy</button>
+                    <button class="btn btn-primary" onclick="saveEditMedicine()"><i class="bi bi-check-lg"></i> Lưu</button>
                 </div>
             </div>
         </div>
@@ -1298,6 +1408,7 @@ IV. QUY ĐỊNH VỀ AN TOÀN & BẢO VỆ
                 'medical-record-search': 'Tra Cứu Phiếu Khám Bệnh',
                 'patient-search': 'Tra Cứu Bệnh Nhân',
                 'disease-search': 'Tra Cứu Danh Sách Loại Bệnh',
+                'medicine-search': 'Tra Cứu Danh Sách Thuốc',
                 'import-receipt-search': 'Tra Cứu Phiếu Nhập Thuốc',
                 'daily-exam': 'Tra Cứu Danh Sách Khám Bệnh Theo Ngày',
                 'medicine-input': 'Thông Tin Thuốc',
@@ -1308,6 +1419,10 @@ IV. QUY ĐỊNH VỀ AN TOÀN & BẢO VỆ
                 'profile': 'Hồ Sơ Cá Nhân'
             };
             document.getElementById('page-title').textContent = titles[tabId] || 'Dashboard';
+
+            if (tabId === 'medicine-search' && !medicinesCache) {
+                loadAllMedicines();
+            }
         }
 
         function showAlert(message, type = 'success') {
@@ -1351,15 +1466,15 @@ IV. QUY ĐỊNH VỀ AN TOÀN & BẢO VỆ
         }
 
         function searchExams() {
-            const searchInput = document.getElementById('examSearchInput').value.toLowerCase();
+            const searchInput = normalizeSearchText(document.getElementById('examSearchInput').value);
             if (!searchInput) {
                 renderExamResults(examList.length ? examList : mockExams);
                 return;
             }
 
             const filtered = (examList.length ? examList : mockExams).filter(e =>
-                String(e.MaPK || e.id).toLowerCase().includes(searchInput) ||
-                String(e.TenBN || e.patientName).toLowerCase().includes(searchInput)
+                normalizeSearchText(e.MaPK || e.id).includes(searchInput) ||
+                normalizeSearchText(e.TenBN || e.patientName).includes(searchInput)
             );
 
             if (filtered.length === 0) {
@@ -1402,15 +1517,15 @@ IV. QUY ĐỊNH VỀ AN TOÀN & BẢO VỆ
         }
 
         function searchPatients() {
-            const searchInput = document.getElementById('patientSearchInput').value.toLowerCase();
+            const searchInput = normalizeSearchText(document.getElementById('patientSearchInput').value);
             if (!searchInput) {
                 renderPatientResults(patientList.length ? patientList : mockPatients);
                 return;
             }
 
             const filtered = (patientList.length ? patientList : mockPatients).filter(p =>
-                String(p.MaBN || p.id).toLowerCase().includes(searchInput) ||
-                String(p.TenBN || p.name).toLowerCase().includes(searchInput)
+                normalizeSearchText(p.MaBN || p.id).includes(searchInput) ||
+                normalizeSearchText(p.TenBN || p.name).includes(searchInput)
             );
 
             if (filtered.length === 0) {
@@ -1450,16 +1565,16 @@ IV. QUY ĐỊNH VỀ AN TOÀN & BẢO VỆ
         }
 
         function searchImportReceipts() {
-            const searchInput = document.getElementById('importReceiptSearchInput').value.toLowerCase();
+            const searchInput = normalizeSearchText(document.getElementById('importReceiptSearchInput').value);
             if (!searchInput) {
                 renderImportReceiptResults(importReceiptList);
                 return;
             }
 
             const filtered = importReceiptList.filter(r => {
-                const id = String(r.MaPN ?? r.id ?? '').toLowerCase();
-                const rawDate = String(r.NgayNhap || r.date || '').toLowerCase();
-                const displayDate = formatDate(r.NgayNhap || r.date).toLowerCase();
+                const id = normalizeSearchText(r.MaPN ?? r.id ?? '');
+                const rawDate = normalizeSearchText(r.NgayNhap || r.date || '');
+                const displayDate = normalizeSearchText(formatDate(r.NgayNhap || r.date));
                 return id.includes(searchInput) || rawDate.includes(searchInput) || displayDate.includes(searchInput);
             });
 
@@ -1567,7 +1682,9 @@ IV. QUY ĐỊNH VỀ AN TOÀN & BẢO VỆ
             medicineList = await fetchBackendData('/thuoc');
             importReceiptList = await fetchImportReceipts();
             // Load cách dùng list for dropdown
-            cachDungList = await fetchBackendData('/cachdung');
+            cachDungList = await fetchBackendData('/cachdung');// Load đơn vị tính list for dropdown
+            dvtList = await fetchBackendData('/dvt');
+            loadEditMedicineDropdowns();
             const cachDungSel = document.getElementById('medicineCachDungSelect');
             if (cachDungSel) {
                 cachDungSel.innerHTML = '<option value="">-- Chọn cách dùng --</option>';
@@ -1578,8 +1695,7 @@ IV. QUY ĐỊNH VỀ AN TOÀN & BẢO VỆ
                     cachDungSel.appendChild(opt);
                 });
             }
-            // Load đơn vị tính list for dropdown
-            dvtList = await fetchBackendData('/dvt');
+            
             const unitSel = document.getElementById('medicineUnit');
             if (unitSel) {
                 unitSel.innerHTML = '<option value="">-- Chọn đơn vị tính --</option>';
@@ -1629,6 +1745,16 @@ IV. QUY ĐỊNH VỀ AN TOÀN & BẢO VỆ
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
             return `${day}/${month}/${year}`;
+        }
+
+        function normalizeSearchText(value) {
+            return String(value || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd')
+                .replace(/Đ/g, 'D')
+                .toLowerCase()
+                .trim();
         }
 
         function sortByNumericId(items, getId) {
@@ -1790,7 +1916,7 @@ IV. QUY ĐỊNH VỀ AN TOÀN & BẢO VỆ
         }
 
         function searchDiseases() {
-            const searchInput = document.getElementById('diseaseSearchInput').value.toLowerCase();
+            const searchInput = normalizeSearchText(document.getElementById('diseaseSearchInput').value);
             if (!diseaseList.length) {
                 document.getElementById('diseaseSearchResults').innerHTML = '<tr><td colspan="3" class="no-results">Chưa có dữ liệu loại bệnh</td></tr>';
                 return;
@@ -1802,8 +1928,9 @@ IV. QUY ĐỊNH VỀ AN TOÀN & BẢO VỆ
             }
 
             const filtered = diseaseList.filter(d =>
-                String(d.MaLoaiBenh || d.id).toLowerCase().includes(searchInput) ||
-                String(d.TenLoaiBenh || d.TenBenh || d.name || '').toLowerCase().includes(searchInput)
+                normalizeSearchText(d.MaLoaiBenh || d.id).includes(searchInput) ||
+                normalizeSearchText(d.TenLoaiBenh || d.TenBenh || d.name || '').includes(searchInput) ||
+                normalizeSearchText(d.MoTa || d.TrieuChung || d.desc || '').includes(searchInput)
             );
 
             if (filtered.length === 0) {
@@ -2300,6 +2427,211 @@ IV. QUY ĐỊNH VỀ AN TOÀN & BẢO VỆ
                 document.getElementById('reg-medicine-markup')
             ].filter(Boolean);
         }
+
+        // ========== MEDICINE SEARCH (TRA CỨU DANH SÁCH THUỐC) ==========
+        let medicinesCache = null;
+        let currentMedicineList = null;
+        let currentMedicinePage = 1;
+        const MEDICINES_PER_PAGE = 13;
+
+        async function loadAllMedicines() {
+            const results = document.getElementById('medicineSearchResults');
+            if (!results) return;
+            results.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Đang tải dữ liệu...</td></tr>';
+            try {
+                const resp = await fetch(`${API_BASE_URL}/thuoc`, {
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }
+                });
+                if (!resp.ok) {
+                    results.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Lỗi khi lấy dữ liệu</td></tr>';
+                    return;
+                }
+                const payload = await resp.json();
+                medicinesCache = payload.data || [];
+                renderMedicineRows(medicinesCache);
+            } catch (err) {
+                console.error('Error loading medicines:', err);
+                results.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Lỗi kết nối</td></tr>';
+            }
+        }
+
+        function renderMedicineRows(list, page = 1) {
+            const results = document.getElementById('medicineSearchResults');
+            const paginationContainer = document.getElementById('medicinePagination');
+            if (!results) return;
+
+            currentMedicineList = list || [];
+            if (!currentMedicineList.length) {
+                results.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Không có dữ liệu</td></tr>';
+                if (paginationContainer) paginationContainer.innerHTML = '';
+                return;
+            }
+
+            const total = currentMedicineList.length;
+            const totalPages = Math.max(1, Math.ceil(total / MEDICINES_PER_PAGE));
+            if (page < 1) page = 1;
+            if (page > totalPages) page = totalPages;
+            currentMedicinePage = page;
+
+            const start = (page - 1) * MEDICINES_PER_PAGE;
+            const pageItems = currentMedicineList.slice(start, start + MEDICINES_PER_PAGE);
+
+            results.innerHTML = pageItems.map(m => `
+                <tr>
+                    <td>${m.TenThuoc || '-'}</td>
+                    <td>${m.TenDVT || m.MaDVT || '-'}</td>
+                    <td>${m.SoLuongTon != null ? m.SoLuongTon : '-'}</td>
+                    <td>${m.DonGiaBan != null ? Number(m.DonGiaBan).toLocaleString('vi-VN') : '-'}</td>
+                    <td>${m.MoTaCachDung || '-'}</td>
+                    <td style="text-align:center; white-space:nowrap;">
+                        <button class="btn btn-sm" style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border:none;border-radius:6px;padding:5px 12px;margin-right:4px;font-size:12px;cursor:pointer;" onclick="openEditMedicineModal(${JSON.stringify(m).replace(/"/g,'&quot;')})">
+                            <i class="bi bi-pencil"></i> Sửa
+                        </button>
+                        <button class="btn btn-sm" style="background:#dc3545;color:white;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;" onclick="deleteMedicine('${m.MaThuoc}','${(m.TenThuoc||'').replace(/'/g,"\\'")}')">
+                            <i class="bi bi-trash"></i> Xóa
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            if (paginationContainer) {
+                paginationContainer.innerHTML = renderMedicinePagination(totalPages, currentMedicinePage);
+                paginationContainer.querySelectorAll('button[data-page]').forEach(btn => {
+                    btn.onclick = () => renderMedicineRows(currentMedicineList, parseInt(btn.getAttribute('data-page'), 10));
+                });
+            }
+        }
+
+        function renderMedicinePagination(totalPages, currentPage) {
+            if (totalPages <= 1) return '';
+            const btn = (n, label, active) => `<button data-page="${n}" style="margin:0 4px;padding:7px 13px;border-radius:6px;border:1px solid #ccc;background:${active?'#667eea':'white'};color:${active?'white':'#333'};cursor:pointer;">${label}</button>`;
+            const parts = [`<button data-page="${Math.max(1,currentPage-1)}" style="margin:0 6px;padding:7px 10px;border:none;background:none;cursor:pointer;">&#8592;</button>`];
+            if (totalPages <= 7) {
+                for (let i=1;i<=totalPages;i++) parts.push(btn(i,i,i===currentPage));
+            } else {
+                if (currentPage<=4) { for(let i=1;i<=5;i++) parts.push(btn(i,i,i===currentPage)); parts.push('<span style="margin:0 4px">…</span>'); parts.push(btn(totalPages,totalPages)); }
+                else if (currentPage>=totalPages-3) { parts.push(btn(1,1)); parts.push('<span style="margin:0 4px">…</span>'); for(let i=totalPages-4;i<=totalPages;i++) parts.push(btn(i,i,i===currentPage)); }
+                else { parts.push(btn(1,1)); parts.push('<span style="margin:0 4px">…</span>'); parts.push(btn(currentPage-1,currentPage-1)); parts.push(btn(currentPage,currentPage,true)); parts.push(btn(currentPage+1,currentPage+1)); parts.push('<span style="margin:0 4px">…</span>'); parts.push(btn(totalPages,totalPages)); }
+            }
+            parts.push(`<button data-page="${Math.min(totalPages,currentPage+1)}" style="margin:0 6px;padding:7px 10px;border:none;background:none;cursor:pointer;">&#8594;</button>`);
+            return parts.join('');
+        }
+
+        async function searchMedicines() {
+            const q = (document.getElementById('medicineSearchInput').value || '').trim();
+            const keyword = normalizeSearchText(q);
+            if (!medicinesCache) await loadAllMedicines();
+            if (!keyword) { renderMedicineRows(medicinesCache); return; }
+            const items = (medicinesCache || []).filter(m =>
+                normalizeSearchText(m.TenThuoc).includes(keyword) ||
+                normalizeSearchText(m.TenDVT).includes(keyword) ||
+                normalizeSearchText(m.MoTaCachDung).includes(keyword) ||
+                normalizeSearchText(m.MaThuoc).includes(keyword)
+            );
+            if (!items.length) {
+                document.getElementById('medicineSearchResults').innerHTML = '<tr><td colspan="6" class="text-center text-muted">Không tìm thấy kết quả</td></tr>';
+                const p = document.getElementById('medicinePagination'); if(p) p.innerHTML='';
+                return;
+            }
+            renderMedicineRows(items);
+        }
+
+        function openEditMedicineModal(m) {
+            document.getElementById('editMedicineMaThuoc').value = m.MaThuoc || '';
+            document.getElementById('editMedicineTenThuoc').value = m.TenThuoc || '';
+            document.getElementById('editMedicineDVT').value = m.MaDVT || '';
+            document.getElementById('editMedicineSoLuong').value = m.SoLuongTon != null ? m.SoLuongTon : '';
+            document.getElementById('editMedicineGia').value = m.DonGiaBan != null ? m.DonGiaBan : '';
+            document.getElementById('editMedicineCachDung').value = m.MaCachDung || '';
+            document.getElementById('editMedicineOverlay').style.display = 'block';
+            document.getElementById('editMedicineModal').style.display = 'block';
+        }
+
+        function closeEditMedicineModal() {
+            document.getElementById('editMedicineOverlay').style.display = 'none';
+            document.getElementById('editMedicineModal').style.display = 'none';
+        }
+
+        async function saveEditMedicine() {
+            const maThuoc = document.getElementById('editMedicineMaThuoc').value;
+            const tenThuoc = document.getElementById('editMedicineTenThuoc').value.trim();
+            if (!tenThuoc) { showAlert('Vui lòng nhập tên thuốc!', 'error'); return; }
+            const maDVT = document.getElementById('editMedicineDVT').value.trim();
+            if (!maDVT) { showAlert('Vui lòng chọn đơn vị tính!', 'error'); return; }
+            const body = {
+                TenThuoc: tenThuoc,
+                MaDVT: Number(maDVT),
+                SoLuongTon: Number(document.getElementById('editMedicineSoLuong').value) || 0,
+                DonGiaBan: Number(document.getElementById('editMedicineGia').value) || 0,
+                MaCachDung: Number(document.getElementById('editMedicineCachDung').value)
+            };
+            try {
+                const resp = await fetch(`${API_BASE_URL}/thuoc/${maThuoc}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                    body: JSON.stringify(body)
+                });
+                if (!resp.ok) {
+                    const err = await resp.json().catch(()=>({}));
+                    showAlert(err.message || 'Không thể cập nhật thuốc', 'error'); return;
+                }
+                showAlert('Cập nhật thuốc thành công!', 'success');
+                closeEditMedicineModal();
+                medicinesCache = null;
+                await loadAllMedicines();
+            } catch(e) {
+                console.error(e);
+                showAlert('Lỗi kết nối khi cập nhật thuốc', 'error');
+            }
+        }
+
+        async function deleteMedicine(maThuoc, tenThuoc) {
+            if (!confirm(`Bạn có chắc muốn xóa thuốc "${tenThuoc}" không?\nHành động này không thể hoàn tác.`)) return;
+            try {
+                const resp = await fetch(`${API_BASE_URL}/thuoc/${maThuoc}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }
+                });
+                if (!resp.ok) {
+                    const err = await resp.json().catch(()=>({}));
+                    showAlert(err.message || 'Không thể xóa thuốc', 'error'); return;
+                }
+                showAlert('Xóa thuốc thành công!', 'success');
+                medicinesCache = null;
+                await loadAllMedicines();
+            } catch(e) {
+                console.error(e);
+                showAlert('Lỗi kết nối khi xóa thuốc', 'error');
+            }
+        }
+
+        function loadEditMedicineDropdowns() {
+            const dvtSelect = document.getElementById('editMedicineDVT');
+            const cachDungSelect = document.getElementById('editMedicineCachDung');
+
+            dvtSelect.innerHTML =
+                '<option value="">-- Chọn đơn vị tính --</option>';
+
+            dvtList.forEach(dvt => {
+                dvtSelect.innerHTML += `
+                    <option value="${dvt.MaDVT}">
+                        ${dvt.TenDVT}
+                    </option>
+                `;
+            });
+
+            cachDungSelect.innerHTML =
+                '<option value="">-- Chọn cách dùng --</option>';
+
+            cachDungList.forEach(cd => {
+                cachDungSelect.innerHTML += `
+                    <option value="${cd.MaCachDung}">
+                        ${cd.MoTaCachDung}
+                    </option>
+                `;
+            });
+        }
+        // ========== END MEDICINE SEARCH ==========
 
         function handleLogout() {
             if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
