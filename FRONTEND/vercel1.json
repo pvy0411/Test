@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/assets/(.*)", "destination": "/FRONTEND/module/pages/assets/$1" },
+    { "source": "/css/(.*)", "destination": "/FRONTEND/module/pages/css/$1" },
+    { "source": "/(.*)", "destination": "/FRONTEND/module/pages/$1" }
+  ]
+}
