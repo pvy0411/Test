@@ -6,7 +6,7 @@
 class AppointmentBooking {
     constructor(formSelector = '.appt-form') {
         this.form = document.querySelector(formSelector);
-        this.apiUrl = 'http://localhost:5000/api/appointments/book';
+        this.apiUrl = 'https://quanlyphongmachtu.onrender.com/api/appointments/book';
         this.submitBtn = null;
         this.init();
     }
