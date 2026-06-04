@@ -1189,7 +1189,7 @@
                         <td>${p.TenBN || '-'}</td>
                         <td>${birthYear}</td>
                         <td><span class="badge ${p.GioiTinh === 'Nam' ? 'bg-primary' : 'bg-info'}">${p.GioiTinh || '-'}</span></td>
-                        <td>${p.NgayTiepNhan || '-'}</td>
+                        <td>${formatDate(p.NgayTiepNhan) || '-'}</td>
                         <td>
                             <button class="btn btn-primary btn-sm" onclick="viewDoctorPatientDetail('${p.MaBN}')">
                                 <i class="bi bi-eye"></i> Xem chi tiết
