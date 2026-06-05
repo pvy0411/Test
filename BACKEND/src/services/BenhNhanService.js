@@ -73,6 +73,7 @@ class BenhNhanService {
             `);
 
         const maBN = bnResult.recordset[0].MaBN;
+        const tenBN = bnResult.recordset[0].TenBN;
 
         // 2. Tính Số Thứ Tự an toàn trước khi Insert Phiếu Khám
         const requestSTT = new sql.Request(transaction);
