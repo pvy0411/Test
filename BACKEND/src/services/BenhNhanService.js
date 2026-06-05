@@ -43,6 +43,7 @@ class BenhNhanService {
 
     // Chuẩn hóa tên bệnh nhân
     data.TenBN = normalizeName(data.TenBN);
+    data.DiaChi = normalizeName(data.DiaChi);
 
     // Kiểm tra CCCD đã tồn tại chưa
     const isExisted = await BenhNhanRepo.CheckExists(data.CCCD);
