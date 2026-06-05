@@ -1,5 +1,7 @@
 const BenhNhanRepo = require('../repositories/BenhNhanRepo');
 const PhieuKhamService = require('./PhieuKhamService');
+const ThamSoRepo = require('../repositories/ThamSoRepo');
+const PhieuKhamRepo = require('../repositories/PhieuKhamRepo');
 const { poolPromise } = require('../config/database');
 const sql = require('mssql');
 
@@ -47,6 +49,25 @@ class BenhNhanService {
     if (isExisted) {
         throw { status: 409, message: 'Bệnh nhân với CCCD này đã tồn tại!' };
     }
+
+    // ── KIỂM TRA GIỚI HẠN SỐ BỆNH NHÂN TRONG NGÀY ──
+    const today = new Date().toISOString().split('T')[0];
+    const DEFAULT_MAX = 40;
+    let maxBenhNhan;
+    try {
+        const raw = await ThamSoRepo.GetByName('SoBenhNhanToiDa');
+        maxBenhNhan = (raw && !isNaN(Number(raw))) ? Number(raw) : DEFAULT_MAX;
+    } catch (e) {
+        maxBenhNhan = DEFAULT_MAX;
+    }
+    const countToday = await PhieuKhamRepo.CountByDate(today);
+    if (countToday >= maxBenhNhan) {
+        throw {
+            status: 400,
+            message: `Phòng mạch đã đạt giới hạn tối đa ${maxBenhNhan} bệnh nhân trong ngày hôm nay. Không thể tiếp nhận thêm!`
+        };
+    }
+    // ────────────────────────────────────────────────
 
     const pool = await poolPromise;
     const transaction = new sql.Transaction(pool);

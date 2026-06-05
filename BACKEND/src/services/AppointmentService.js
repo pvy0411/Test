@@ -1,4 +1,8 @@
 const AppointmentRepo = require('../repositories/AppointmentRepo');
+const ThamSoRepo = require('../repositories/ThamSoRepo');
+const PhieuKhamRepo = require('../repositories/PhieuKhamRepo');
+
+const DEFAULT_MAX_PATIENTS = 40;
 
 class AppointmentService {
     // Validate email
@@ -115,6 +119,22 @@ class AppointmentService {
             }
 
             console.log('[AppointmentService] Validation thành công, kiểm tra bệnh nhân tồn tại');
+
+            // ── Kiểm tra giới hạn số bệnh nhân trong ngày khám ──
+            const ngayKham = data.NgayKham; // yyyy-mm-dd
+            let maxBN = DEFAULT_MAX_PATIENTS;
+            try {
+                const raw = await ThamSoRepo.GetByName('SoBenhNhanToiDa');
+                if (raw && !isNaN(Number(raw))) maxBN = Number(raw);
+            } catch (e) { /* dùng mặc định */ }
+            const countOnDay = await PhieuKhamRepo.CountByDate(ngayKham);
+            if (countOnDay >= maxBN) {
+                throw {
+                    status: 400,
+                    message: `Phòng mạch đã đạt giới hạn tối đa ${maxBN} bệnh nhân trong ngày ${ngayKham}. Vui lòng chọn ngày khác!`
+                };
+            }
+            // ────────────────────────────────────────────────────
             
             // Check if patient already exists by CCCD
             const existingPatient = await AppointmentRepo.CheckPatientByCCCD(data.CCCD);
