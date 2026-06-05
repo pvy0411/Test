@@ -164,7 +164,7 @@ class AppointmentBooking {
      */
     showErrorMessage(errors) {
         if (Array.isArray(errors) && errors.length > 0) {
-            const errorMessage = errors.join(<br></br>);
+            const errorMessage = errors.join(' ');
             this.showAlert(errorMessage, 'error');
         }
     }
@@ -232,7 +232,7 @@ class AppointmentBooking {
 
             if (!response.ok) {
                 // Backend error
-                const errorMessage = result.errors?.join(<br></br>) || result.message || 'Đặt lịch khám thất bại';
+                const errorMessage = result.errors?.join(' ') || result.message || 'Đặt lịch khám thất bại';
                 this.showAlert(errorMessage, 'error');
                 return;
             }
