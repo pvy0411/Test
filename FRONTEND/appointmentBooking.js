@@ -123,10 +123,8 @@ class AppointmentBooking {
             errors.push('Số điện thoại không hợp lệ (0xxxxxxxxx hoặc +84xxxxxxxxx)');
         }
 
-        if (!data.Email) {
-            errors.push('Email không được để trống');
-        } else if (!this.validateEmail(data.Email)) {
-            errors.push('Email không hợp lệ');
+        if (data.Email && !this.validateEmail(data.Email)) {
+            errors.push('Email không hợp lệ (Vui lòng điền đúng định dạng hoặc để trống)');
         }
 
         if (!data.GioiTinh) {
@@ -166,7 +164,7 @@ class AppointmentBooking {
      */
     showErrorMessage(errors) {
         if (Array.isArray(errors) && errors.length > 0) {
-            const errorMessage = errors.join('\n');
+            const errorMessage = errors.join('<br>');
             this.showAlert(errorMessage, 'error');
         }
     }
@@ -234,7 +232,7 @@ class AppointmentBooking {
 
             if (!response.ok) {
                 // Backend error
-                const errorMessage = result.errors?.join('\n') || result.message || 'Đặt lịch khám thất bại';
+                const errorMessage = result.errors?.join('<br>') || result.message || 'Đặt lịch khám thất bại';
                 this.showAlert(errorMessage, 'error');
                 return;
             }
