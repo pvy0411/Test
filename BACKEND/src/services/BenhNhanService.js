@@ -1,5 +1,7 @@
 const BenhNhanRepo = require('../repositories/BenhNhanRepo');
 const PhieuKhamService = require('./PhieuKhamService');
+const { poolPromise } = require('../config/database');
+const sql = require('mssql');
 
 
 function normalizeName(name) {
