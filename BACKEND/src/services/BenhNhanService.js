@@ -43,14 +43,62 @@ class BenhNhanService {
         if (isExisted) {
             throw { status: 409, message: 'Bệnh nhân với CCCD này đã tồn tại!' };
         }
-        // Email không bắt buộc — nếu trống thì truyền null (Repo đã xử lý)
-        const maBN = await BenhNhanRepo.Create(data);
+        const pool = await poolPromise;
+    const transaction = new sql.Transaction(pool);
 
-        // Tự động tạo phiếu khám ngay sau khi lập hồ sơ
-        const phieuKham = await PhieuKhamService.CreatePhieuKham(MaNV || null, maBN);
+    try {
+        // Bắt đầu chuỗi giao dịch liên hoàn
+        await transaction.begin();
 
-        return { maBN, maPK: phieuKham.MaPK, soThuTu: phieuKham.SoThuTu, TenBN: data.TenBN};
+        // Thêm bệnh nhân thông qua transaction
+        // Cần chỉnh sửa một chút trong Repo hoặc xử lý request trực tiếp tại đây để ăn theo transaction:
+        const requestBN = new sql.Request(transaction);
+        const emailValue = (data.Email && data.Email.trim() !== '') ? data.Email.trim() : null;
+        const diaChiValue = (data.DiaChi && data.DiaChi.trim() !== '') ? data.DiaChi.trim() : null;
+
+        const bnResult = await requestBN
+            .input('TenBN', sql.NVarChar, data.TenBN)
+            .input('CCCD', sql.VarChar, data.CCCD)
+            .input('GioiTinh', sql.NVarChar, data.GioiTinh)
+            .input('NgaySinh', sql.Date, data.NgaySinh || null)
+            .input('DiaChi', sql.NVarChar, diaChiValue)
+            .input('SDT', sql.VarChar, data.SDT)
+            .input('Email', sql.VarChar, emailValue)
+            .query(`
+                INSERT INTO BENHNHAN (TenBN, CCCD, GioiTinh, NgaySinh, DiaChi, SDT, Email)
+                OUTPUT INSERTED.MaBN 
+                VALUES (@TenBN, @CCCD, @GioiTinh, @NgaySinh, @DiaChi, @SDT, @Email)
+            `);
+
+        const maBN = bnResult.recordset[0].MaBN;
+
+        // Gọi dịch vụ tạo phiếu khám (Bạn cần đảm bảo hàm CreatePhieuKham của bạn hỗ trợ nhận transaction 
+        // hoặc viết gộp câu lệnh insert phiếu khám vào đây chạy chung request)
+        const requestPK = new sql.Request(transaction);
+        const pkResult = await requestPK
+            .input('MaNV', sql.Int, MaNV || null)
+            .input('MaBN', sql.Int, maBN)
+                .query(`
+                I   NSERT INTO PHIEUKHAM (MaNV, MaBN, NgayKham, SoThuTu)
+                    OUTPUT INSERTED.MaPK, INSERTED.SoThuTu
+                    VALUES (@MaNV, @MaBN, CONVERT(date, GETDATE()), 
+                        ISNULL((SELECT MAX(SoThuTu) FROM PHIEUKHAM WHERE NgayKham = CONVERT(date, GETDATE())), 0) + 1)
+                `);
+
+        const phieuKham = pkResult.recordset[0];
+
+            // Nếu tất cả các lệnh trên chạy thành công không lỗi gì -> Lưu chính thức vào database
+        await transaction.commit();
+
+        return { maBN, maPK: phieuKham.MaPK, soThuTu: phieuKham.SoThuTu, TenBN: data.TenBN };
+
+    } catch (error) {
+            // Nếu có bất kỳ lỗi nào xảy ra (Ví dụ: Lỗi CHECK constraint ngày khám), 
+            // Hệ thống lập tức "quay xe", xóa bỏ bản ghi bệnh nhân vừa chèn ở bước trước.
+            await transaction.rollback();
+            throw error; // Ném lỗi ra ngoài để controller trả về status code cho frontend
     }
+}
 
     async Update(MaBN, dataUpdate) {
         const check = await BenhNhanRepo.GetById(MaBN);
