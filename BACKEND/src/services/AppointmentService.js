@@ -11,31 +11,6 @@ class AppointmentService {
         return emailRegex.test(email);
     }
 
-    // Get capacity info for a given date
-    async GetCapacity(dateString) {
-        // validate date
-        if (!this.validateDate(dateString)) {
-            throw { status: 400, message: 'Ngày không hợp lệ' };
-        }
-
-        const ngayKham = dateString;
-        let maxBN = DEFAULT_MAX_PATIENTS;
-        try {
-            const raw = await ThamSoRepo.GetByName('SoBenhNhanToiDa');
-            if (raw && !isNaN(Number(raw))) maxBN = Number(raw);
-        } catch (e) {
-            // use default
-        }
-
-        const countOnDay = await PhieuKhamRepo.CountByDate(ngayKham);
-
-        return {
-            currentCount: countOnDay,
-            maxCount: maxBN,
-            available: countOnDay < maxBN
-        };
-    }
-
     // Validate phone number (VN format: 10 digits)
     validatePhoneNumber(phone) {
         const phoneRegex = /^(0|\+84)[0-9]{9}$/;
