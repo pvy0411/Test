@@ -1635,37 +1635,44 @@ Mã Mời ThưẬc Phòng Khám *
         const today = new Date().toISOString().split('T')[0];
         appointmentDateInput.min = today;
       }
-    });
+    
     // ===== CHUẨN HÓA CHỮ HOA CHỮ THƯỜNG (HỌ TÊN & ĐỊA CHỈ) =====
   
   // Hàm chuẩn hóa chuỗi
-  function formatTitleCase(str) {
-    if (!str) return '';
+    function formatTitleCase(str) {
+      if (!str) return '';
     // Xóa khoảng trắng thừa ở đầu, cuối và giữa các từ
-    str = str.trim().replace(/\s+/g, ' ');
+      str = str.trim().replace(/\s+/g, ' ');
     
     // Viết hoa chữ cái đầu tiên của mỗi từ (hỗ trợ tốt Tiếng Việt có dấu)
-    return str.toLowerCase().split(' ').map(word => {
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    }).join(' ');
-  }
+      return str.toLowerCase().split(' ').map(word => {
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      }).join(' ');
+    }
 
   // Lấy các element dựa trên ID
-  const patientNameInput = document.getElementById('patientName');
-  const addressInput = document.getElementById('address');
+    const patientNameInput = document.getElementById('patientName');
+    const addressInput = document.getElementById('address');
+    const regFullNameInput = document.getElementById('regFullName');
 
   // Bắt sự kiện 'blur' (khi người dùng nhấp chuột ra ngoài ô input) để format
-  if (patientNameInput) {
-    patientNameInput.addEventListener('blur', function() {
-      this.value = formatTitleCase(this.value);
-    });
-  }
+    if (patientNameInput) {
+      patientNameInput.addEventListener('blur', function() {
+        this.value = formatTitleCase(this.value);
+      });
+    }
 
-  if (addressInput) {
-    addressInput.addEventListener('blur', function() {
-      this.value = formatTitleCase(this.value);
+    if (addressInput) {
+      addressInput.addEventListener('blur', function() {
+        this.value = formatTitleCase(this.value);
+      });
+    }
+      if (regFullNameInput) {
+        regFullNameInput.addEventListener('blur', function() {
+          this.value = formatTitleCase(this.value);
+        });
+      }
     });
-  }
   </script>
 
 </body>

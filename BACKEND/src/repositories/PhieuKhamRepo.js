@@ -11,11 +11,9 @@ class PhieuKhamRepo {
             .input('MaBN', sql.Int, MaBN)
             .input('NgayKham', sql.Date, NgayKham)
             .query(`
-                DECLARE @OutputTable TABLE (MaPK INT, SoThuTu INT);
-                INSERT INTO PHIEUKHAM (MaNV, MaBN, NgayKham)
-                OUTPUT INSERTED.MaPK, INSERTED.SoThuTu INTO @OutputTable
+                INSERT INTO PHIEUKHAM (MaNV, MaBN, NgayKham, SoThuTu)
                 VALUES (@MaNV, @MaBN, @NgayKham);
-                SELECT * FROM @OutputTable;
+                SELECT MaPK, SoThuTu FROM PHIEUKHAM WHERE MaPK = SCOPE_IDENTITY();
             `);
         return result.recordset[0];
     }

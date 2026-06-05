@@ -28,8 +28,8 @@ class AppointmentRepo {
                 .input('NgaySinh', sql.Date, data.NgaySinh || null)
                 .query(`
                     INSERT INTO BENHNHAN (TenBN, CCCD, GioiTinh, SDT, Email, DiaChi, NgaySinh)
-                    OUTPUT INSERTED.MaBN
                     VALUES (@TenBN, @CCCD, @GioiTinh, @SDT, @Email, @DiaChi, @NgaySinh)
+                    SELECT MaPK, SoThuTu FROM PHIEUKHAM WHERE MaPK = SCOPE_IDENTITY();
                 `);
             return result.recordset[0].MaBN;
         } catch (error) {
