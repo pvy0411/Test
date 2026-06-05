@@ -82,6 +82,15 @@
       flex: 1;
       justify-content: flex-end;
     }   
+    #services:target ~ nav .nav-links a[href*="#services"],
+    #doctors:target ~ nav .nav-links a[href*="#doctors"],
+    #contact:target ~ nav .nav-links a[href*="#contact"] {
+    color: white !important;
+    background: rgba(255, 255, 255, 0.1);
+    border-left-color: #4db8ff;
+    padding-left: 25px;
+    font-weight: bold;
+    }
     .btn-appt {
       background: var(--teal); color: white !important;
       border-radius: 50px !important;
