@@ -240,7 +240,7 @@ class AppointmentBooking {
             }
 
             // Success
-            const successMessage = `Đặt lịch khám thành công!\n\nMã bệnh nhân: ${result.data.maBN}\nMã phiếu khám: ${result.data.maPK}\n\nChúng tôi sẽ liên hệ xác nhận sớm nhất.`;
+            const successMessage = `Đặt lịch khám thành công!<br><br>Mã bệnh nhân: ${result.data.maBN}<br>Mã phiếu khám: ${result.data.maPK}<br><br>Chúng tôi sẽ liên hệ xác nhận sớm nhất.`;
             this.showAlert(successMessage, 'success');
 
             // Reset form - xóa giá trị từng input
