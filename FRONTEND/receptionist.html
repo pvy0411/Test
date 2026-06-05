@@ -2315,7 +2315,9 @@
                 const soThuTu = result.soThuTu ? ` (Số thứ tự hôm nay: ${result.soThuTu})` : '';
                 document.getElementById('successMaBN').textContent = newMaBN;
                 document.getElementById('successMaPK').textContent = newMaPK + soThuTu;
-                document.getElementById('successTenBN').textContent = formData.TenBN;
+                //document.getElementById('successTenBN').textContent = formData.TenBN;
+                const normalizedName = result.TenBN || result.data?.TenBN || formData.TenBN;
+                document.getElementById('successTenBN').textContent = normalizedName;
                 document.getElementById('registrationSuccessModal').style.display = 'block';
                 document.getElementById('registrationModalOverlay').style.display = 'block';
 
