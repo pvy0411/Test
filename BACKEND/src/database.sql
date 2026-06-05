@@ -791,6 +791,25 @@ BEGIN
 END;
 GO
 
+-- 2. Tạo trigger tự động chuẩn hóa tên khi INSERT hoặc UPDATE
+CREATE TRIGGER trg_AutoChuanHoaTenBN
+ON BENHNHAN
+AFTER INSERT, UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Nếu có sự thay đổi hoặc thêm mới ở cột TenBN
+    IF UPDATE(TenBN)
+    BEGIN
+        UPDATE b
+        SET b.TenBN = dbo.fn_ChuanHoaTen(i.TenBN)
+        FROM BENHNHAN b
+        INNER JOIN inserted i ON b.MaBN = i.MaBN;
+    END
+END;
+GO
+
 
 -----------------------------------------------------------
 -- INSERT DATA

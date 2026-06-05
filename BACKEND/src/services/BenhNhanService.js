@@ -69,7 +69,7 @@ class BenhNhanService {
             .query(`
                 INSERT INTO BENHNHAN (TenBN, CCCD, GioiTinh, NgaySinh, DiaChi, SDT, Email)
                 OUTPUT INSERTED.MaBN 
-                VALUES (@TenBN, @CCCD, @GioiTinh, @NgaySinh, @DiaChi, @SDT, @Email)
+                VALUES (dbo.fn_ChuanHoaTen(@TenBN), @CCCD, @GioiTinh, @NgaySinh, @DiaChi, @SDT, @Email)
             `);
 
         const maBN = bnResult.recordset[0].MaBN;
