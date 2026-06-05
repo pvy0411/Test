@@ -177,7 +177,7 @@ class AppointmentBooking {
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 title: type === 'success' ? 'Thành công!' : 'Lỗi!',
-                text: message,
+                html: message,
                 icon: type,
                 confirmButtonText: 'OK',
                 confirmButtonColor: type === 'success' ? '#4CAF50' : '#f44336'
