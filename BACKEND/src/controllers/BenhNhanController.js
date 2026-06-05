@@ -32,7 +32,8 @@ class BenhNhanController {
                 message: 'Lập hồ sơ và tạo phiếu khám thành công!',
                 maBN: result.maBN,
                 maPK: result.maPK,
-                soThuTu: result.soThuTu
+                soThuTu: result.soThuTu,
+                TenBN: result.TenBN
             });
         } catch (error) {
             res.status(error.status || 500).json({ status: 'error', message: error.message });

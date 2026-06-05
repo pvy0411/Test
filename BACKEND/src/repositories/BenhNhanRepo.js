@@ -57,7 +57,7 @@ class BenhNhanRepo {
         // Email để NULL nếu không có, DiaChi có thể rỗng
         const emailValue = (data.Email && data.Email.trim() !== '') ? data.Email.trim() : null;
         const diaChiValue = (data.DiaChi && data.DiaChi.trim() !== '') ? data.DiaChi.trim() : null;
-
+        
         const result = await pool.request()
             .input('TenBN',    sql.NVarChar, data.TenBN)
             .input('CCCD',     sql.VarChar,  data.CCCD)

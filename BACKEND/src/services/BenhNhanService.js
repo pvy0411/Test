@@ -1,6 +1,19 @@
 const BenhNhanRepo = require('../repositories/BenhNhanRepo');
 const PhieuKhamService = require('./PhieuKhamService');
 
+
+function normalizeName(name) {
+    return name
+        .trim()
+        .replace(/\s+/g, ' ')
+        .toLowerCase()
+        .split(' ')
+        .map(word =>
+            word.charAt(0).toUpperCase() + word.slice(1)
+        )
+        .join(' ');
+}
+
 class BenhNhanService {
     async GetAll() {
         return await BenhNhanRepo.GetAll();
@@ -23,6 +36,8 @@ class BenhNhanService {
         if (!data.TenBN || !data.CCCD || !data.GioiTinh || !data.SDT) {
             throw { status: 400, message: 'Vui lòng cung cấp đầy đủ: Họ tên, CCCD, Giới tính, Số điện thoại!' };
         }
+        // Chuẩn hóa tên bệnh nhân
+        data.TenBN = normalizeName(data.TenBN);
         // Kiểm tra CCCD đã tồn tại chưa
         const isExisted = await BenhNhanRepo.CheckExists(data.CCCD);
         if (isExisted) {
@@ -34,13 +49,17 @@ class BenhNhanService {
         // Tự động tạo phiếu khám ngay sau khi lập hồ sơ
         const phieuKham = await PhieuKhamService.CreatePhieuKham(MaNV || null, maBN);
 
-        return { maBN, maPK: phieuKham.MaPK, soThuTu: phieuKham.SoThuTu };
+        return { maBN, maPK: phieuKham.MaPK, soThuTu: phieuKham.SoThuTu, TenBN: data.TenBN};
     }
 
     async Update(MaBN, dataUpdate) {
         const check = await BenhNhanRepo.GetById(MaBN);
         if (!check) throw { status: 404, message: 'Không tìm thấy bệnh nhân!' };
         
+        if (dataUpdate.TenBN) {
+            dataUpdate.TenBN = normalizeName(dataUpdate.TenBN);
+        }
+
         await BenhNhanRepo.Update(MaBN, dataUpdate);
         return { message: 'Cập nhật thành công' };
     }
@@ -68,7 +87,9 @@ class BenhNhanService {
     async UpdateByCCCD(cccd, dataUpdate) {
         const bn = await BenhNhanRepo.GetByCCCD(cccd);
         if (!bn) throw { status: 404, message: 'Không tìm thấy bệnh nhân với CCCD đã cho' };
-
+        if (dataUpdate.TenBN) {
+            dataUpdate.TenBN = normalizeName(dataUpdate.TenBN);
+        }
         await BenhNhanRepo.Update(bn.MaBN, dataUpdate);
         return { message: 'Cập nhật thành công' };
     }
@@ -81,4 +102,5 @@ class BenhNhanService {
         return { message: 'Đã xóa bệnh nhân và các phiếu khám liên quan' };
     }
 }
+
 module.exports = new BenhNhanService();
