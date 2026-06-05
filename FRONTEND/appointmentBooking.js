@@ -25,6 +25,30 @@ class AppointmentBooking {
             // Thêm event listener
             this.submitBtn.addEventListener('click', (e) => this.handleSubmit(e));
         }
+
+        // Tạo phần hiển thị sức chứa cạnh input ngày (nếu có)
+        this.ngayKhamInput = this.form.querySelector('#appointmentDate') || this.form.querySelector('input[type="date"]');
+        if (this.ngayKhamInput) {
+            // tạo phần hiển thị nếu chưa có
+            this.capacityDisplay = this.form.querySelector('.capacity-display');
+            if (!this.capacityDisplay) {
+                this.capacityDisplay = document.createElement('div');
+                this.capacityDisplay.className = 'capacity-display';
+                this.capacityDisplay.style.marginTop = '6px';
+                this.capacityDisplay.style.fontSize = '0.95em';
+                this.capacityDisplay.style.color = '#333';
+                this.ngayKhamInput.insertAdjacentElement('afterend', this.capacityDisplay);
+            }
+
+            // Lắng nghe khi thay đổi ngày
+            this.ngayKhamInput.addEventListener('change', () => {
+                const date = this.ngayKhamInput.value;
+                if (date) this.fetchCapacity(date);
+            });
+
+            // Nếu có giá trị sẵn, gọi check một lần
+            if (this.ngayKhamInput.value) this.fetchCapacity(this.ngayKhamInput.value);
+        }
     }
 
     /**
@@ -200,6 +224,37 @@ class AppointmentBooking {
                 this.submitBtn.disabled = false;
                 this.submitBtn.innerHTML = 'Xác Nhận Đặt Lịch →';
             }
+        }
+    }
+
+    // Fetch capacity from backend for a given date
+    async fetchCapacity(date) {
+        try {
+            const capacityEndpoint = this.apiUrl.replace('/book', '/check-capacity');
+            const resp = await fetch(`${capacityEndpoint}?date=${encodeURIComponent(date)}`);
+            const json = await resp.json();
+            if (!resp.ok) {
+                // show error in capacity area
+                this.capacityDisplay && (this.capacityDisplay.textContent = json.message || 'Không thể kiểm tra sức chứa');
+                return;
+            }
+
+            const data = json.data || {};
+            const current = data.currentCount ?? 0;
+            const max = data.maxCount ?? 0;
+            const available = data.available === true;
+
+            if (this.capacityDisplay) {
+                this.capacityDisplay.textContent = `Hiện tại: ${current}/${max} bệnh nhân`;
+                this.capacityDisplay.style.color = available ? '#2b8a3e' : '#c62828';
+            }
+
+            if (this.submitBtn) {
+                this.submitBtn.disabled = !available;
+            }
+        } catch (err) {
+            console.error('Lỗi fetchCapacity:', err);
+            if (this.capacityDisplay) this.capacityDisplay.textContent = 'Lỗi khi kiểm tra sức chứa';
         }
     }
 
