@@ -1386,7 +1386,7 @@
                     <td>${e.MaPK}</td>
                     <td>${e.TenBN || '-'}</td>
                     <td><span class="badge ${e.GioiTinh === 'Nam' ? 'bg-primary' : 'bg-info'}">${e.GioiTinh || '-'}</span></td>
-                    <td>${formatDate(e.NgaySinh) || '-'}</td>
+                    <td>${e.NgaySinh ? e.NgaySinh.split('-')[0] : '-'}</td>
                     <td>${formatDate(e.NgayKham) || '-'}</td>
                     <td>
                         <button type="button" class="btn btn-primary btn-sm" onclick="viewExamDetail('${e.MaPK}')">Xem chi tiết</button>
