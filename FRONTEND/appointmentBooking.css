@@ -232,3 +232,9 @@
         opacity: 1;
     }
 }
+.swal2-html-container, 
+.swal2-content {
+    display: block !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+}
