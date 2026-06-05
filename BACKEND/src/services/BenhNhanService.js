@@ -92,8 +92,8 @@ class BenhNhanService {
             .input('Email', sql.VarChar, emailValue)
             .query(`
                 INSERT INTO BENHNHAN (TenBN, CCCD, GioiTinh, NgaySinh, DiaChi, SDT, Email)
-                OUTPUT INSERTED.MaBN 
-                VALUES (dbo.fn_ChuanHoaTen(@TenBN), @CCCD, @GioiTinh, @NgaySinh, @DiaChi, @SDT, @Email)
+                VALUES (dbo.fn_ChuanHoaTen(@TenBN), @CCCD, @GioiTinh, @NgaySinh, @DiaChi, @SDT, @Email);
+                SELECT MaBN, TenBN FROM BENHNHAN WHERE MaBN = SCOPE_IDENTITY();
             `);
 
         const maBN = bnResult.recordset[0].MaBN;
@@ -116,8 +116,9 @@ class BenhNhanService {
             .input('SoThuTu', sql.Int, nextSoThuTu)
             .query(`
                 INSERT INTO PHIEUKHAM (MaNV, MaBN, NgayKham, SoThuTu)
-                OUTPUT INSERTED.MaPK, INSERTED.SoThuTu
-                VALUES (@MaNV, @MaBN, CONVERT(date, GETDATE()), @SoThuTu)
+                VALUES (@MaNV, @MaBN, CONVERT(date, GETDATE()), @SoThuTu);
+
+                SELECT MaPK, SoThuTu FROM PHIEUKHAM WHERE MaPK = SCOPE_IDENTITY();
             `);
 
         const phieuKham = pkResult.recordset[0];
